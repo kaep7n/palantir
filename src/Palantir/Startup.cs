@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Palantir.Homatic;
-using Palantir.Homematic;
 using Prometheus;
 using Proto;
 using Proto.DependencyInjection;
@@ -39,10 +37,11 @@ namespace Palantir
             services.AddTransient<PersistorGroup>();
             services.AddTransient<Persistor>();
             services.AddTransient<DeviceController>();
+            services.AddTransient<Device>();
 
             services.AddHttpClient();
-            services.AddHostedService<Worker>();
-
+            services.AddHostedService(p => p.GetRequiredService<Worker>());
+            services.AddSingleton<Worker>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

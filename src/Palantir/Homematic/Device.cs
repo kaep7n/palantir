@@ -1,22 +1,25 @@
 ﻿using Microsoft.Extensions.Logging;
 using Proto;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Palantir.Homatic
+namespace Palantir
 {
     public class Device : IActor
     {
-        private readonly string identifier;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<Device> logger;
+
+        private string identifier;
         private DeviceInformation information;
 
-        public Device(string identifier, IHttpClientFactory httpClientFactory, ILogger<Device> logger)
+        private readonly Dictionary<int, Channel> channels = new();
+
+        public Device(IHttpClientFactory httpClientFactory, ILogger<Device> logger)
         {
-            this.identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -25,27 +28,43 @@ namespace Palantir.Homatic
         {
             switch (context.Message)
             {
-                case Started:
-                    await this.OnStarted();
+                case InitializeDevice msg:
+                    await this.OnInitializedAsync(msg);
                     break;
                 case DeviceData:
                     this.OnDeviceData(context);
+                    break;
+                case GetDeviceState:
+                    context.Respond(new DeviceState(this.information, this.channels.Values));
                     break;
                 default:
                     break;
             }
         }
 
-        private async Task OnStarted()
+        private async Task OnInitializedAsync(InitializeDevice msg)
         {
-            var httpClient = this.httpClientFactory.CreateClient();
+            this.identifier = msg.Identifier;
 
+            var httpClient = this.httpClientFactory.CreateClient();
             this.information = await httpClient.GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
         }
 
         private void OnDeviceData(IContext context)
         {
             this.logger.LogInformation($"received: {context.Message}");
+
+            if (context.Message is DeviceData data)
+            {
+                if (!this.channels.TryGetValue(data.Channel, out var channel))
+                {
+                    channel = new Channel(data.Channel, new Dictionary<string, Data>());
+                    this.channels.Add(data.Channel, channel);
+                }
+
+                channel.Params[data.Type] = data.Data;
+            }
+
             context.System.EventStream.Publish(context.Message);
         }
     }

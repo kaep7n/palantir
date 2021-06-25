@@ -3,8 +3,6 @@ using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
-using Palantir.Homatic;
-using Palantir.Homematic;
 using Proto;
 using Proto.DependencyInjection;
 using System;
@@ -19,7 +17,7 @@ namespace Palantir
         private readonly ActorSystem actorSystem;
         private readonly ILogger<Worker> logger;
         private PID persistorGroup;
-        private PID homaticRoot;
+        public PID homaticRoot;
 
         public Worker(ActorSystem actorSystem, ILogger<Worker> logger)
         {

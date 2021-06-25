@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Palantir.Homatic
+namespace Palantir
 {
     public record DeviceQueryResult
     {

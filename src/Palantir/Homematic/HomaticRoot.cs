@@ -4,7 +4,7 @@ using Proto.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace Palantir.Homatic
+namespace Palantir
 {
     public class HomaticRoot : IActor
     {
@@ -21,7 +21,8 @@ namespace Palantir.Homatic
             => context.Message switch
             {
                 Started => this.OnStarted(context),
-                DeviceData => this.OnDeviceData(context),
+                DeviceData => this.ForwardToDevceController(context),
+                GetDeviceStates => this.ForwardToDevceController(context),
                 _ => Task.CompletedTask
             };
 
@@ -35,10 +36,10 @@ namespace Palantir.Homatic
             return Task.CompletedTask;
         }
 
-        private Task OnDeviceData(IContext context)
+        private Task ForwardToDevceController(IContext context)
         {
             context.Forward(this.deviceController);
-            this.logger.LogInformation("forwarded device data to device controller");
+            this.logger.LogInformation("forwarded {message} to device controller", context.Message);
             
             return Task.CompletedTask;
         }

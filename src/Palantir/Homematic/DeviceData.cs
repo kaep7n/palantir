@@ -1,7 +1,7 @@
 ﻿
 using System.Text.Json.Serialization;
 
-namespace Palantir.Homatic
+namespace Palantir
 {
     public record DeviceData(string Device, int Channel, string Type, Data Data);
 

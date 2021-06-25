@@ -1,26 +1,22 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Proto;
 using Proto.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Palantir.Homatic
+namespace Palantir
 {
     public class DeviceController : IActor
     {
         private readonly Dictionary<string, PID> devices = new();
-        private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<DeviceController> logger;
 
-        public DeviceController(IServiceScopeFactory serviceScopeFactory, ILogger<DeviceController> logger)
-        {
-            this.serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        public DeviceController(ILogger<DeviceController> logger)
+            => this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         public async Task ReceiveAsync(IContext context)
         {
@@ -31,6 +27,20 @@ namespace Palantir.Homatic
                     break;
                 case DeviceData msg:
                     this.OnDeviceData(context, msg);
+                    break;
+                case GetDeviceStates:
+                    var tasks = new List<Task<DeviceState>>();
+
+                    foreach (var device in devices)
+                    {
+                        var task = context.RequestAsync<DeviceState>(device.Value, new GetDeviceState());
+                        tasks.Add(task);
+                    }
+
+                    await Task.WhenAll(tasks);
+
+                    context.Respond(new DeviceStates(tasks.Select(t => t.Result)));
+
                     break;
                 default:
                     break;
@@ -49,13 +59,11 @@ namespace Palantir.Homatic
                 if (link.IsParentRef)
                     continue;
 
-                using var scope = this.serviceScopeFactory.CreateScope();
-
-                var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Device>>();
-
-                var props = Props.FromProducer(() => new Device(link.Href, httpClientFactory, logger));
+                var props = context.System.DI().PropsFor<Device>();
                 var pid = context.Spawn(props);
+
+                context.Send(pid, new InitializeDevice(link.Href));
+
                 this.devices.Add(link.Href, pid);
             }
         }

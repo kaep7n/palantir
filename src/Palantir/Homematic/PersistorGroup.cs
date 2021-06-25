@@ -1,9 +1,8 @@
-﻿using Palantir.Homatic;
-using Proto;
+﻿using Proto;
 using Proto.Router;
 using System.Threading.Tasks;
 
-namespace Palantir.Homematic
+namespace Palantir
 {
     public class PersistorGroup : IActor
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Palantir.Homatic
+namespace Palantir
 {
     public record DeviceInformation
     {
