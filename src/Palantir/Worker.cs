@@ -38,9 +38,7 @@ namespace Palantir
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+            => Task.CompletedTask;
 
         private async Task StartMqtt(ActorSystem system, PID root)
         {

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using Proto;
@@ -15,21 +14,18 @@ namespace Palantir
     public class Startup
     {
         public Startup(IConfiguration configuration)
-        {
-            this.Configuration = configuration;
-        }
+            => this.Configuration = configuration;
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var loggerFactory = LoggerFactory.Create(x => x.AddConsole().SetMinimumLevel(LogLevel.Information));
-            Log.SetLoggerFactory(loggerFactory);
+            services.Configure<ElasticConfiguration>(this.Configuration.GetSection("elasticSearch"));
+            services.AddTransient<PersistorClient>();
 
             var config = ActorSystemConfig.Setup().WithMetricsProviders(new PrometheusConfigurator());
 
-            services.AddSingleton(serviceProvider => 
+            services.AddSingleton(serviceProvider =>
                     new ActorSystem(config)
                         .WithServiceProvider(serviceProvider)
                     );
@@ -49,7 +45,6 @@ namespace Palantir
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
