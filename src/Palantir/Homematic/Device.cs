@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Palantir.Homematic;
 using Proto;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Palantir
         private string identifier;
         private DeviceInformation information;
 
-        private readonly Dictionary<int, Channel> channels = new();
+        private readonly Dictionary<int, ChannelData> channels = new();
 
         public Device(IHttpClientFactory httpClientFactory, ILogger<Device> logger)
         {
@@ -48,6 +49,24 @@ namespace Palantir
 
             var httpClient = this.httpClientFactory.CreateClient();
             this.information = await httpClient.GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
+        
+            foreach(var channelLink in this.information.Links)
+            {
+                if (channelLink.IsParentRef) 
+                    continue;
+
+                var response = await httpClient.GetAsync($"http://192.168.2.101:2121/device/{this.identifier}/{channelLink.Href}");
+                var responseString = await response.Content.ReadAsStringAsync();
+                var channelInformation = await httpClient.GetFromJsonAsync<ChannelInformation>($"http://192.168.2.101:2121/device/{this.identifier}/{channelLink.Href}");
+
+                foreach (var parameterLink in channelInformation.Links)
+                {
+                    if (parameterLink.IsParentRef)
+                        continue;
+
+                    var parameterInformation = await httpClient.GetFromJsonAsync<ParameterInformation>($"http://192.168.2.101:2121/device/{this.identifier}/{channelLink.Href}/{parameterLink.Href}");
+                }
+            }
         }
 
         private void OnDeviceData(IContext context)
@@ -58,7 +77,7 @@ namespace Palantir
             {
                 if (!this.channels.TryGetValue(data.Channel, out var channel))
                 {
-                    channel = new Channel(data.Channel, new Dictionary<string, Data>());
+                    channel = new ChannelData(data.Channel, new Dictionary<string, Data>());
                     this.channels.Add(data.Channel, channel);
                 }
 

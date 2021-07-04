@@ -2,5 +2,5 @@
 
 namespace Palantir
 {
-    public record DeviceState(DeviceInformation Information, IEnumerable<Channel> Channels);
+    public record DeviceState(DeviceInformation Information, IEnumerable<ChannelData> Channels);
 }
