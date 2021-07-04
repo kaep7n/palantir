@@ -35,6 +35,10 @@ namespace Palantir
             services.AddTransient<DeviceController>();
             services.AddTransient<Device>();
 
+            services.AddTransient<IDeviceFactory, DeviceFactory>();
+            services.AddTransient<IChannelFactory, ChannelFactory>();
+            services.AddTransient<IParameterFactory, ParameterFactory>();
+
             services.AddHttpClient();
             services.AddHostedService(p => p.GetRequiredService<Worker>());
             services.AddSingleton<Worker>();

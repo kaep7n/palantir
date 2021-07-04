@@ -13,10 +13,14 @@ namespace Palantir
     public class DeviceController : IActor
     {
         private readonly Dictionary<string, PID> devices = new();
+        private readonly IDeviceFactory deviceFactory;
         private readonly ILogger<DeviceController> logger;
 
-        public DeviceController(ILogger<DeviceController> logger)
-            => this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        public DeviceController(IDeviceFactory deviceFactory, ILogger<DeviceController> logger)
+        {
+            this.deviceFactory = deviceFactory ?? throw new ArgumentNullException(nameof(deviceFactory));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
         public async Task ReceiveAsync(IContext context)
         {
@@ -59,10 +63,8 @@ namespace Palantir
                 if (link.IsParentRef)
                     continue;
 
-                var props = context.System.DI().PropsFor<Device>();
+                var props = this.deviceFactory.CreateProps(link.Href);
                 var pid = context.Spawn(props);
-
-                context.Send(pid, new InitializeDevice(link.Href));
 
                 this.devices.Add(link.Href, pid);
             }

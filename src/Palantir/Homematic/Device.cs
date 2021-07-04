@@ -14,13 +14,16 @@ namespace Palantir
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<Device> logger;
 
-        private string identifier;
+        private readonly string identifier;
+        private readonly IChannelFactory channelFactory;
         private DeviceInformation information;
 
-        private readonly Dictionary<int, ChannelData> channels = new();
+        private readonly Dictionary<string, PID> channels = new();
 
-        public Device(IHttpClientFactory httpClientFactory, ILogger<Device> logger)
+        public Device(string identifier, IChannelFactory channelFactory, IHttpClientFactory httpClientFactory, ILogger<Device> logger)
         {
+            this.identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            this.channelFactory = channelFactory ?? throw new ArgumentNullException(nameof(channelFactory));
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -29,43 +32,35 @@ namespace Palantir
         {
             switch (context.Message)
             {
-                case InitializeDevice msg:
-                    await this.OnInitializedAsync(msg);
+                case Started:
+                    await this.OnStarted(context);
                     break;
                 case DeviceData:
                     this.OnDeviceData(context);
                     break;
                 case GetDeviceState:
-                    context.Respond(new DeviceState(this.information, this.channels.Values));
+                    throw new NotSupportedException("currently not supported... see code");
+                    //context.Respond(new DeviceState(this.information, this.channels.Values));
                     break;
                 default:
                     break;
             }
         }
 
-        private async Task OnInitializedAsync(InitializeDevice msg)
+        private async Task OnStarted(IContext context)
         {
-            this.identifier = msg.Identifier;
-
             var httpClient = this.httpClientFactory.CreateClient();
             this.information = await httpClient.GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
         
             foreach(var channelLink in this.information.Links)
             {
-                if (channelLink.IsParentRef) 
+                if (channelLink.IsParentRef)
                     continue;
 
-                var response = await httpClient.GetAsync($"http://192.168.2.101:2121/device/{this.identifier}/{channelLink.Href}");
-                var responseString = await response.Content.ReadAsStringAsync();
-                var channelInformation = await httpClient.GetFromJsonAsync<ChannelInformation>($"http://192.168.2.101:2121/device/{this.identifier}/{channelLink.Href}");
+                var props = this.channelFactory.CreateProps($"{this.identifier}/{channelLink.Href}");
+                var pid = context.Spawn(props);
 
-                foreach (var parameterLink in channelInformation.Links)
-                {
-                    if (parameterLink.IsParentRef)
-                        continue;
-
-                    var parameterInformation = await httpClient.GetFromJsonAsync<ParameterInformation>($"http://192.168.2.101:2121/device/{this.identifier}/{channelLink.Href}/{parameterLink.Href}");
-                }
+                this.channels.Add(channelLink.Href, pid);
             }
         }
 
@@ -73,16 +68,16 @@ namespace Palantir
         {
             this.logger.LogInformation($"received: {context.Message}");
 
-            if (context.Message is DeviceData data)
-            {
-                if (!this.channels.TryGetValue(data.Channel, out var channel))
-                {
-                    channel = new ChannelData(data.Channel, new Dictionary<string, Data>());
-                    this.channels.Add(data.Channel, channel);
-                }
+            //if (context.Message is DeviceData data)
+            //{
+            //    if (!this.channels.TryGetValue(data.Channel, out var channel))
+            //    {
+            //        channel = new ChannelData(data.Channel, new Dictionary<string, Data>());
+            //        this.channels.Add(data.Channel, channel);
+            //    }
 
-                channel.Params[data.Type] = data.Data;
-            }
+            //    channel.Params[data.Type] = data.Data;
+            //}
 
             context.System.EventStream.Publish(context.Message);
         }
