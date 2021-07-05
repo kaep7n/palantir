@@ -57,38 +57,28 @@ namespace Palantir.Homematic
 
         private void OnDeviceData(IContext context, DeviceData msg)
         {
-            this.current = msg;
-
-            var value = (JsonElement)msg.Value;
-
-            object valueResult = null;
-
-            switch (value.ValueKind)
+            try
             {
-                case JsonValueKind.Undefined:
-                case JsonValueKind.Object:
-                case JsonValueKind.Array:
-                case JsonValueKind.Null:
-                    break;
-                case JsonValueKind.String:
-                    valueResult = value.GetString();
-                    break;
-                case JsonValueKind.Number:
-                    valueResult = value.GetDouble();
-                    break;
-                case JsonValueKind.True:
-                    valueResult = value.GetBoolean();
-                    break;
-                case JsonValueKind.False:
-                    valueResult = value.GetBoolean();
-                    break;
-                default:
-                    throw new Exception("unexpected value kind");
+                this.current = msg;
+
+                var value = (JsonElement)msg.Value;
+
+                object convertedValue = this.parameterInformation.Type switch
+                {
+                    "INTEGER" => value.GetInt32(),
+                    "FLOAT" => value.GetDouble(),
+                    "BOOL" => value.GetBoolean(),
+                    _ => throw new Exception($"unexpected type {this.parameterInformation.Type}"),
+                };
+
+                context.System.EventStream.Publish(msg with { Value = convertedValue });
+
+                this.logger.LogInformation("received {data}", msg);
             }
-
-            context.System.EventStream.Publish(msg with { Value = valueResult });
-
-            this.logger.LogInformation("received {deviceData}", msg);
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "unexpected error while publishing parameter data");
+            }
         }
     }
 }

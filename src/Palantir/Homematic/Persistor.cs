@@ -18,18 +18,25 @@ namespace Palantir
 
         public async Task ReceiveAsync(IContext context)
         {
-            if (context.Message is Started)
+            try
             {
-                this.logger.LogInformation("persistor started");
+                if (context.Message is Started)
+                {
+                    this.logger.LogInformation("persistor started");
+                }
+
+                if (context.Message is DeviceData msg)
+                {
+                    this.logger.LogDebug("received message {message}", msg);
+
+                    var response = await this.client.Client.IndexAsync(msg, idx => idx.Index($"homatic-{msg.Parameter.ToLower()}-{msg.Timestamp:yyyy-MM}"));
+
+                    this.logger.LogInformation("elastic response: {response}", response);
+                }
             }
-
-            if (context.Message is DeviceData msg)
+            catch (Exception exception)
             {
-                this.logger.LogDebug("received message {message}", msg);
-
-                var response = await this.client.Client.IndexAsync(msg, idx => idx.Index($"homatic-{msg.Device.ToLower()}-{msg.Timestamp:yyyy-MM}"));
-
-                this.logger.LogInformation("elastic response: {response}", response);
+                this.logger.LogError(exception, "unexpected error while persisting parameter data");
             }
         }
     }
