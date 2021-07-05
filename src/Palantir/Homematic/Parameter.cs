@@ -3,6 +3,7 @@ using Proto;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Palantir.Homematic
@@ -14,6 +15,7 @@ namespace Palantir.Homematic
         private readonly ILogger<Parameter> logger;
 
         private ParameterInformation parameterInformation;
+        private DeviceData current;
 
         public Parameter(string identifier, IHttpClientFactory httpClientFactory, ILogger<Parameter> logger)
         {
@@ -28,6 +30,9 @@ namespace Palantir.Homematic
             {
                 case Started:
                     await this.OnStarted();
+                    break;
+                case DeviceData msg:
+                    this.OnDeviceData(context, msg);
                     break;
                 default:
                     break;
@@ -48,6 +53,42 @@ namespace Palantir.Homematic
             {
                 this.logger.LogError(exception, "unable to start parameter {identifier}", this.identifier);
             }
+        }
+
+        private void OnDeviceData(IContext context, DeviceData msg)
+        {
+            this.current = msg;
+
+            var value = (JsonElement)msg.Value;
+
+            object valueResult = null;
+
+            switch (value.ValueKind)
+            {
+                case JsonValueKind.Undefined:
+                case JsonValueKind.Object:
+                case JsonValueKind.Array:
+                case JsonValueKind.Null:
+                    break;
+                case JsonValueKind.String:
+                    valueResult = value.GetString();
+                    break;
+                case JsonValueKind.Number:
+                    valueResult = value.GetDouble();
+                    break;
+                case JsonValueKind.True:
+                    valueResult = value.GetBoolean();
+                    break;
+                case JsonValueKind.False:
+                    valueResult = value.GetBoolean();
+                    break;
+                default:
+                    throw new Exception("unexpected value kind");
+            }
+
+            context.System.EventStream.Publish(msg with { Value = valueResult });
+
+            this.logger.LogInformation("received {deviceData}", msg);
         }
     }
 }

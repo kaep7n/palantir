@@ -34,6 +34,9 @@ namespace Palantir.Homematic
                 case Started:
                     await this.OnStarted(context);
                     break;
+                case DeviceData msg:
+                    this.OnDeviceData(context, msg);
+                    break;
                 default:
                     break;
             }
@@ -66,6 +69,15 @@ namespace Palantir.Homematic
             {
                 this.logger.LogError(exception, "unable to start channel {identifier}", this.identifier);
             }
+        }
+
+        private void OnDeviceData(IContext context, DeviceData msg)
+        {
+            if (!this.parameters.TryGetValue(msg.Parameter, out var parameterPid))
+                this.logger.LogWarning("parameter {identifier} does not exist", msg.Device);
+
+            context.Forward(parameterPid);
+            this.logger.LogTrace($"forwarded device data to parameter {parameterPid}");
         }
     }
 }

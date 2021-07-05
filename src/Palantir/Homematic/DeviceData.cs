@@ -1,9 +1,10 @@
 ﻿
+using System;
 using System.Text.Json.Serialization;
 
 namespace Palantir
 {
-    public record DeviceData(string Device, int Channel, string Type, Data Data);
+    public record DeviceData(string Device, string Channel, string Parameter, DateTimeOffset Timestamp, object Value, int Status);
 
     public record Data
     {

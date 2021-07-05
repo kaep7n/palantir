@@ -34,12 +34,11 @@ namespace Palantir
                 case Started:
                     await this.OnStarted(context);
                     break;
-                case DeviceData:
-                    this.OnDeviceData(context);
+                case DeviceData msg:
+                    this.OnDeviceData(context, msg);
                     break;
                 case GetDeviceState:
-                    throw new NotSupportedException("currently not supported... see code");
-                    //context.Respond(new DeviceState(this.information, this.channels.Values));
+                    context.Respond(new DeviceState(this.information, null));
                     break;
                 default:
                     break;
@@ -72,22 +71,13 @@ namespace Palantir
             }
         }
 
-        private void OnDeviceData(IContext context)
+        private void OnDeviceData(IContext context, DeviceData msg)
         {
-            this.logger.LogInformation($"received: {context.Message}");
+            if (!this.channels.TryGetValue(msg.Channel, out var channelPid))
+                this.logger.LogWarning("channel {identifier} does not exist", msg.Device);
 
-            //if (context.Message is DeviceData data)
-            //{
-            //    if (!this.channels.TryGetValue(data.Channel, out var channel))
-            //    {
-            //        channel = new ChannelData(data.Channel, new Dictionary<string, Data>());
-            //        this.channels.Add(data.Channel, channel);
-            //    }
-
-            //    channel.Params[data.Type] = data.Data;
-            //}
-
-            context.System.EventStream.Publish(context.Message);
+            context.Forward(channelPid);
+            this.logger.LogTrace($"forwarded device data to channel {channelPid}");
         }
     }
 }

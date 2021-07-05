@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Proto;
-using Proto.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,9 +71,11 @@ namespace Palantir
 
         private void OnDeviceData(IContext context, DeviceData msg)
         {
-            var device = this.devices[msg.Device];
-            context.Forward(device);
-            this.logger.LogInformation($"forwarded device data to device {device.Id}");
+            if (!this.devices.TryGetValue(msg.Device, out var devicePid))
+                this.logger.LogWarning("device {identifier} does not exist", msg.Device);
+
+            context.Forward(devicePid);
+            this.logger.LogTrace($"forwarded device data to device {devicePid}");
         }
     }
 }

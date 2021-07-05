@@ -27,9 +27,10 @@ namespace Palantir
             {
                 this.logger.LogDebug("received message {message}", msg);
 
-                await this.client.Client.IndexAsync(msg, idx => idx.Index("homematic"));
-            }
+                var response = await this.client.Client.IndexAsync(msg, idx => idx.Index($"homatic-{msg.Device.ToLower()}-{msg.Timestamp:yyyy-MM}"));
 
+                this.logger.LogInformation("elastic response: {response}", response);
+            }
         }
     }
 }

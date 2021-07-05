@@ -6,7 +6,6 @@ using MQTTnet.Extensions.ManagedClient;
 using Proto;
 using Proto.DependencyInjection;
 using System;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ namespace Palantir
 {
     public class Worker : IHostedService
     {
-        private readonly IHttpClientFactory httpClientFactory;
         private readonly ActorSystem actorSystem;
         private readonly ILogger<Worker> logger;
         private PID persistorGroup;
@@ -36,7 +34,7 @@ namespace Palantir
                 this.actorSystem.DI().PropsFor<HomaticRoot>()
             );
 
-            //await this.StartMqtt(this.actorSystem, this.homaticRoot);
+            await this.StartMqtt(this.actorSystem, this.homaticRoot);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -79,7 +77,13 @@ namespace Palantir
                 var dataString = e.ApplicationMessage.ConvertPayloadToString();
                 var data = JsonSerializer.Deserialize<Data>(dataString);
 
-                system.Root.Send(root, new DeviceData(device, int.Parse(channel), type, data));
+                var deviceData = new DeviceData(device, channel, type,
+                    DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp),
+                    data.Value,
+                    data.Status
+                );
+
+                system.Root.Send(root, deviceData);
             });
 
             await mqttClient.StartAsync(options);
