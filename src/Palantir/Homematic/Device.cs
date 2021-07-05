@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Palantir.Homematic;
 using Proto;
 using System;
 using System.Collections.Generic;
@@ -49,18 +48,27 @@ namespace Palantir
 
         private async Task OnStarted(IContext context)
         {
-            var httpClient = this.httpClientFactory.CreateClient();
-            this.information = await httpClient.GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
-        
-            foreach(var channelLink in this.information.Links)
+            try
             {
-                if (channelLink.IsParentRef)
-                    continue;
+                var httpClient = this.httpClientFactory.CreateClient();
+                this.information = await httpClient.GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
 
-                var props = this.channelFactory.CreateProps($"{this.identifier}/{channelLink.Href}");
-                var pid = context.Spawn(props);
+                foreach (var channelLink in this.information.Links)
+                {
+                    if (channelLink.IsParentRef)
+                        continue;
 
-                this.channels.Add(channelLink.Href, pid);
+                    var props = this.channelFactory.CreateProps($"{this.identifier}/{channelLink.Href}");
+                    var pid = context.Spawn(props);
+
+                    this.channels.Add(channelLink.Href, pid);
+                }
+
+                this.logger.LogInformation("device {identifier} started with {channelCount} channels", this.identifier, this.channels.Count);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "unable to start device {identifier}", this.identifier);
             }
         }
 

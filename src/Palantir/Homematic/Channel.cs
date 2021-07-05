@@ -41,19 +41,30 @@ namespace Palantir.Homematic
 
         private async Task OnStarted(IContext context)
         {
-            var httpClient = this.httpClientFactory.CreateClient();
-         
-            this.channelInformation = await httpClient.GetFromJsonAsync<ChannelInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
-
-            foreach (var parameterLink in this.channelInformation.Links)
+            try
             {
-                if (parameterLink.IsParentRef)
-                    continue;
+                var httpClient = this.httpClientFactory.CreateClient();
 
-                var props = this.parameterFactory.CreateProps($"{this.identifier}/{parameterLink.Href}");
-                var pid = context.Spawn(props);
+                this.channelInformation = await httpClient.GetFromJsonAsync<ChannelInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
 
-                this.parameters.Add(parameterLink.Href, pid);
+                foreach (var parameterLink in this.channelInformation.Links)
+                {
+                    if (parameterLink.IsParentRef)
+                        continue;
+                    if (parameterLink.Rel != "parameter")
+                        continue;
+
+                    var props = this.parameterFactory.CreateProps($"{this.identifier}/{parameterLink.Href}");
+                    var pid = context.Spawn(props);
+
+                    this.parameters.Add(parameterLink.Href, pid);
+                }
+
+                this.logger.LogInformation("channel {identifier} started with {parameterCount} parameters", this.identifier, this.parameters.Count);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "unable to start channel {identifier}", this.identifier);
             }
         }
     }

@@ -36,9 +36,18 @@ namespace Palantir.Homematic
 
         private async Task OnStarted()
         {
-            var httpClient = this.httpClientFactory.CreateClient();
+            try
+            {
+                var httpClient = this.httpClientFactory.CreateClient();
 
-            this.parameterInformation = await httpClient.GetFromJsonAsync<ParameterInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
+                this.parameterInformation = await httpClient.GetFromJsonAsync<ParameterInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
+
+                this.logger.LogInformation("parameter {identifier} started", this.identifier);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "unable to start parameter {identifier}", this.identifier);
+            }
         }
     }
 }
