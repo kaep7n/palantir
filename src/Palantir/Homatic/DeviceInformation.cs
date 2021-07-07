@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace Palantir
+namespace Palantir.Homatic
 {
     public record DeviceInformation
     {
@@ -55,5 +56,8 @@ namespace Palantir
         public string Type { get; init; }
 
         public int Version { get; init; }
+
+        [JsonPropertyName("~links")]
+        public IEnumerable<Link> Links { get; init; } = new List<Link>();
     }
 }

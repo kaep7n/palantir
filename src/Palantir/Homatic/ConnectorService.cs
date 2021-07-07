@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
+using Palantir.Homatic.Actors;
 using Proto;
 using Proto.DependencyInjection;
 using System;
@@ -10,16 +11,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Palantir
+namespace Palantir.Homatic
 {
-    public class Worker : IHostedService
+    public class ConnectorService : IHostedService
     {
         private readonly ActorSystem actorSystem;
-        private readonly ILogger<Worker> logger;
-        private PID persistorGroup;
-        public PID homaticRoot;
+        private readonly ILogger<ConnectorService> logger;
+        private PID homaticRoot;
 
-        public Worker(ActorSystem actorSystem, ILogger<Worker> logger)
+        public ConnectorService(ActorSystem actorSystem, ILogger<ConnectorService> logger)
         {
             this.actorSystem = actorSystem ?? throw new ArgumentNullException(nameof(actorSystem));
             this.logger = logger;
@@ -27,26 +27,25 @@ namespace Palantir
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            this.persistorGroup = this.actorSystem.Root.Spawn(
-                this.actorSystem.DI().PropsFor<PersistorGroup>()
-            );
             this.homaticRoot = this.actorSystem.Root.Spawn(
-                this.actorSystem.DI().PropsFor<HomaticRoot>()
+                this.actorSystem.DI().PropsFor<Root>()
             );
 
-            await this.StartMqtt(this.actorSystem, this.homaticRoot);
+            await this.StartMqtt(this.actorSystem, this.homaticRoot).ConfigureAwait(false);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
 
+        public Task<TResult> RequestAsync<TResult>(object message)
+            => this.actorSystem.Root.RequestAsync<TResult>(this.homaticRoot, message);
+
         private async Task StartMqtt(ActorSystem system, PID root)
         {
-
             var options = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
                 .WithClientOptions(new MqttClientOptionsBuilder()
-                    .WithClientId("funky")
+                    .WithClientId("palantir")
                     .WithTcpServer("192.168.2.101")
                     .Build())
                 .Build();
@@ -54,14 +53,14 @@ namespace Palantir
             var mqttClient = new MqttFactory().CreateManagedMqttClient();
             await mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
                 .WithTopic("device/status/#")
-                .Build());
+                .Build()).ConfigureAwait(false);
 
-            mqttClient.UseDisconnectedHandler(e =>
+            mqttClient.UseDisconnectedHandler(_ =>
             {
                 this.logger.LogWarning("disconnected");
             });
 
-            mqttClient.UseConnectedHandler(e =>
+            mqttClient.UseConnectedHandler(_ =>
             {
                 this.logger.LogInformation("connected");
             });
@@ -75,12 +74,18 @@ namespace Palantir
                 var type = topicPaths[4];
 
                 var dataString = e.ApplicationMessage.ConvertPayloadToString();
-                var data = JsonSerializer.Deserialize<Data>(dataString);
+                var data = JsonSerializer.Deserialize<VeapMessage>(dataString);
 
-                system.Root.Send(root, new DeviceData(device, int.Parse(channel), type, data));
+                var deviceData = new DeviceParameterValue(device, channel, type,
+                    DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp),
+                    data.Value,
+                    data.Status
+                );
+
+                system.Root.Send(root, deviceData);
             });
 
-            await mqttClient.StartAsync(options);
+            await mqttClient.StartAsync(options).ConfigureAwait(false);
         }
     }
 }

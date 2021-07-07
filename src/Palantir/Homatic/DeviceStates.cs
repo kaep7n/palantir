@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Palantir
+namespace Palantir.Homatic
 {
     public record DeviceStates(IEnumerable<DeviceState> Devices);
 }

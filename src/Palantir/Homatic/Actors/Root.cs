@@ -4,14 +4,14 @@ using Proto.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
-    public class HomaticRoot : IActor
+    public class Root : IActor
     {
-        private readonly ILogger<HomaticRoot> logger;
+        private readonly ILogger<Root> logger;
         private PID deviceController;
 
-        public HomaticRoot(ILogger<HomaticRoot> logger)
+        public Root(ILogger<Root> logger)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.logger.LogInformation("homematic root created");
@@ -21,8 +21,8 @@ namespace Palantir
             => context.Message switch
             {
                 Started => this.OnStarted(context),
-                DeviceData => this.ForwardToDevceController(context),
-                GetDeviceStates => this.ForwardToDevceController(context),
+                DeviceParameterValue => this.ForwardToDeviceController(context),
+                GetDeviceStates => this.ForwardToDeviceController(context),
                 _ => Task.CompletedTask
             };
 
@@ -36,11 +36,11 @@ namespace Palantir
             return Task.CompletedTask;
         }
 
-        private Task ForwardToDevceController(IContext context)
+        private Task ForwardToDeviceController(IContext context)
         {
             context.Forward(this.deviceController);
             this.logger.LogInformation("forwarded {message} to device controller", context.Message);
-            
+
             return Task.CompletedTask;
         }
     }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Proto;
-using Proto.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,24 +7,28 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
     public class DeviceController : IActor
     {
         private readonly Dictionary<string, PID> devices = new();
+        private readonly IDeviceFactory deviceFactory;
         private readonly ILogger<DeviceController> logger;
 
-        public DeviceController(ILogger<DeviceController> logger)
-            => this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        public DeviceController(IDeviceFactory deviceFactory, ILogger<DeviceController> logger)
+        {
+            this.deviceFactory = deviceFactory ?? throw new ArgumentNullException(nameof(deviceFactory));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
         public async Task ReceiveAsync(IContext context)
         {
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted(context);
+                    await this.OnStarted(context).ConfigureAwait(false);
                     break;
-                case DeviceData msg:
+                case DeviceParameterValue msg:
                     this.OnDeviceData(context, msg);
                     break;
                 case GetDeviceStates:
@@ -37,7 +40,8 @@ namespace Palantir
                         tasks.Add(task);
                     }
 
-                    await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks)
+                        .ConfigureAwait(false);
 
                     context.Respond(new DeviceStates(tasks.Select(t => t.Result)));
 
@@ -52,27 +56,27 @@ namespace Palantir
             this.logger.LogInformation("started device controller");
             var httpClient = new HttpClient();
 
-            var response = await httpClient.GetFromJsonAsync<DeviceQueryResult>("http://192.168.2.101:2121/device");
+            var response = await httpClient.GetFromJsonAsync<DeviceQueryResult>("http://192.168.2.101:2121/device").ConfigureAwait(false);
 
             foreach (var link in response.Links)
             {
                 if (link.IsParentRef)
                     continue;
 
-                var props = context.System.DI().PropsFor<Device>();
+                var props = this.deviceFactory.CreateProps(link.Href);
                 var pid = context.Spawn(props);
-
-                context.Send(pid, new InitializeDevice(link.Href));
 
                 this.devices.Add(link.Href, pid);
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceData msg)
+        private void OnDeviceData(IContext context, DeviceParameterValue msg)
         {
-            var device = this.devices[msg.Device];
-            context.Forward(device);
-            this.logger.LogInformation($"forwarded device data to device {device.Id}");
+            if (!this.devices.TryGetValue(msg.Device, out var devicePid))
+                this.logger.LogWarning("device {identifier} does not exist", msg.Device);
+
+            context.Forward(devicePid);
+            this.logger.LogTrace($"forwarded device data to device {devicePid}");
         }
     }
 }

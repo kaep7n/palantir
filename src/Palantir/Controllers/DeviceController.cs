@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Proto;
+using Palantir.Homatic;
 using System;
 using System.Threading.Tasks;
 
@@ -10,21 +10,18 @@ namespace Palantir.Controllers
     [Route("[controller]")]
     public class DeviceController : ControllerBase
     {
-        private readonly ActorSystem actorSystem;
-        private readonly Worker worker;
+        private readonly ConnectorService connectorService;
         private readonly ILogger<DeviceController> logger;
 
-        public DeviceController(ActorSystem actorSystem, Worker worker, ILogger<DeviceController> logger)
+        public DeviceController(ConnectorService connectorService, ILogger<DeviceController> logger)
         {
-            this.actorSystem = actorSystem ?? throw new ArgumentNullException(nameof(actorSystem));
-            this.worker = worker ?? throw new ArgumentNullException(nameof(worker));
+            this.connectorService = connectorService ?? throw new ArgumentNullException(nameof(connectorService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpGet]
         public async Task<DeviceStates> GetAsync()
-        {
-            return await this.actorSystem.Root.RequestAsync<DeviceStates>(this.worker.homaticRoot, new GetDeviceStates());
-        }
+            => await this.connectorService.RequestAsync<DeviceStates>(new GetDeviceStates())
+                                          .ConfigureAwait(false);
     }
 }

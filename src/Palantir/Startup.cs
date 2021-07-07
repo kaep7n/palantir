@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Palantir.Homatic;
+using Palantir.Homatic.Actors;
 using Prometheus;
 using Proto;
 using Proto.DependencyInjection;
@@ -29,15 +31,21 @@ namespace Palantir
                     new ActorSystem(config)
                         .WithServiceProvider(serviceProvider)
                     );
-            services.AddTransient<HomaticRoot>();
+            services.AddTransient<Root>();
             services.AddTransient<PersistorGroup>();
             services.AddTransient<Persistor>();
             services.AddTransient<DeviceController>();
             services.AddTransient<Device>();
 
+            services.AddTransient<IDeviceFactory, DeviceFactory>();
+            services.AddTransient<IChannelFactory, ChannelFactory>();
+            services.AddTransient<IParameterFactory, ParameterFactory>();
+
             services.AddHttpClient();
-            services.AddHostedService(p => p.GetRequiredService<Worker>());
-            services.AddSingleton<Worker>();
+            services.AddHostedService(p => p.GetRequiredService<ConnectorService>());
+            services.AddSingleton<ConnectorService>();
+            services.AddHostedService<PersistorService>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

@@ -19,7 +19,8 @@ namespace Palantir
                 .UseSerilog((context, configuration) =>
                 {
                     configuration.Enrich.FromLogContext()
-                        .WriteTo.Console()
+                        .WriteTo.Console(
+                        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}")
                         .WriteTo.Elasticsearch(
                             new ElasticsearchSinkOptions(context.Configuration.GetValue<IEnumerable<Uri>>("elasticSearch:nodes"))
                             {
