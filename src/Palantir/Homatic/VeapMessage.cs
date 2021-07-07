@@ -1,10 +1,14 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Palantir
+namespace Palantir.Homatic
 {
-    public record Data
+    /// <summary>
+    /// VEAP Protocol Message
+    /// https://github.com/mdzio/veap/blob/master/README_de.md
+    /// </summary>
+    public record VeapMessage
     {
-        public Data(long timestamp, object value, int status)
+        public VeapMessage(long timestamp, object value, int status)
         {
             this.Timestamp = timestamp;
             this.Value = value;

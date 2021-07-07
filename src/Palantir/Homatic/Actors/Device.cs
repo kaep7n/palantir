@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
     public class Device : IActor
     {
@@ -32,15 +32,13 @@ namespace Palantir
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted(context);
+                    await this.OnStarted(context).ConfigureAwait(false);
                     break;
-                case DeviceData msg:
+                case DeviceParameterValue msg:
                     this.OnDeviceData(context, msg);
                     break;
                 case GetDeviceState:
-                    context.Respond(new DeviceState(this.information, null));
-                    break;
-                default:
+                    context.Respond(new DeviceState(this.information));
                     break;
             }
         }
@@ -50,7 +48,10 @@ namespace Palantir
             try
             {
                 var httpClient = this.httpClientFactory.CreateClient();
-                this.information = await httpClient.GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
+
+                this.information = await httpClient
+                    .GetFromJsonAsync<DeviceInformation>($"http://192.168.2.101:2121/device/{this.identifier}")
+                    .ConfigureAwait(false);
 
                 foreach (var channelLink in this.information.Links)
                 {
@@ -71,7 +72,7 @@ namespace Palantir
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceData msg)
+        private void OnDeviceData(IContext context, DeviceParameterValue msg)
         {
             if (!this.channels.TryGetValue(msg.Channel, out var channelPid))
                 this.logger.LogWarning("channel {identifier} does not exist", msg.Device);

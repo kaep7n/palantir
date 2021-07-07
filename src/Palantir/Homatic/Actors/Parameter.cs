@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Palantir.Homematic
+namespace Palantir.Homatic.Actors
 {
     public class Parameter : IActor
     {
@@ -15,7 +15,7 @@ namespace Palantir.Homematic
         private readonly ILogger<Parameter> logger;
 
         private ParameterInformation parameterInformation;
-        private DeviceData current;
+        private DeviceParameterValue current;
 
         public Parameter(string identifier, IHttpClientFactory httpClientFactory, ILogger<Parameter> logger)
         {
@@ -29,9 +29,9 @@ namespace Palantir.Homematic
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted();
+                    await this.OnStarted().ConfigureAwait(false);
                     break;
-                case DeviceData msg:
+                case DeviceParameterValue msg:
                     this.OnDeviceData(context, msg);
                     break;
                 default:
@@ -45,7 +45,7 @@ namespace Palantir.Homematic
             {
                 var httpClient = this.httpClientFactory.CreateClient();
 
-                this.parameterInformation = await httpClient.GetFromJsonAsync<ParameterInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
+                this.parameterInformation = await httpClient.GetFromJsonAsync<ParameterInformation>($"http://192.168.2.101:2121/device/{this.identifier}").ConfigureAwait(false);
 
                 this.logger.LogInformation("parameter {identifier} started", this.identifier);
             }
@@ -55,7 +55,7 @@ namespace Palantir.Homematic
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceData msg)
+        private void OnDeviceData(IContext context, DeviceParameterValue msg)
         {
             try
             {
@@ -68,6 +68,7 @@ namespace Palantir.Homematic
                     "INTEGER" => value.GetInt32(),
                     "FLOAT" => value.GetDouble(),
                     "BOOL" => value.GetBoolean(),
+                    "ENUM" => value.GetString(),
                     _ => throw new Exception($"unexpected type {this.parameterInformation.Type}"),
                 };
 

@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Palantir.Homematic;
 using Proto;
 using System;
 using System.Net.Http;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
     public class ParameterFactory : IParameterFactory
     {

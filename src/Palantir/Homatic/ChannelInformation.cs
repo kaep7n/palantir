@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Palantir
+namespace Palantir.Homatic
 {
-    public record DeviceInformation
+    public record ChannelInformation
     {
         public string Address { get; init; }
 
@@ -11,7 +11,7 @@ namespace Palantir
 
         public string AvailableFirmware { get; init; }
 
-        public IReadOnlyList<string> Children { get; init; }
+        public object Children { get; init; }
 
         public int Direction { get; init; }
 
@@ -27,13 +27,11 @@ namespace Palantir
 
         public string Interface { get; init; }
 
-        public string InterfaceType { get; init; }
-
         public string LinkSourceRoles { get; init; }
 
         public string LinkTargetRoles { get; init; }
 
-        public IReadOnlyList<string> Paramsets { get; init; }
+        public IEnumerable<string> Paramsets { get; } = new List<string>();
 
         public string Parent { get; init; }
 

@@ -1,4 +1,4 @@
-﻿namespace Palantir
+﻿namespace Palantir.Homatic
 {
     public record Link(string Rel, string Href, string Title)
     {

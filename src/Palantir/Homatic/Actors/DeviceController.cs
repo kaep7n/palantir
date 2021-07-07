@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
     public class DeviceController : IActor
     {
@@ -26,9 +26,9 @@ namespace Palantir
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted(context);
+                    await this.OnStarted(context).ConfigureAwait(false);
                     break;
-                case DeviceData msg:
+                case DeviceParameterValue msg:
                     this.OnDeviceData(context, msg);
                     break;
                 case GetDeviceStates:
@@ -40,7 +40,8 @@ namespace Palantir
                         tasks.Add(task);
                     }
 
-                    await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks)
+                        .ConfigureAwait(false);
 
                     context.Respond(new DeviceStates(tasks.Select(t => t.Result)));
 
@@ -55,7 +56,7 @@ namespace Palantir
             this.logger.LogInformation("started device controller");
             var httpClient = new HttpClient();
 
-            var response = await httpClient.GetFromJsonAsync<DeviceQueryResult>("http://192.168.2.101:2121/device");
+            var response = await httpClient.GetFromJsonAsync<DeviceQueryResult>("http://192.168.2.101:2121/device").ConfigureAwait(false);
 
             foreach (var link in response.Links)
             {
@@ -69,7 +70,7 @@ namespace Palantir
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceData msg)
+        private void OnDeviceData(IContext context, DeviceParameterValue msg)
         {
             if (!this.devices.TryGetValue(msg.Device, out var devicePid))
                 this.logger.LogWarning("device {identifier} does not exist", msg.Device);

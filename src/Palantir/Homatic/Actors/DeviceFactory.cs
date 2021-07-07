@@ -1,25 +1,24 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Palantir.Homematic;
 using Proto;
 using System;
 using System.Net.Http;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
-    public class ChannelFactory : IChannelFactory
+    public class DeviceFactory : IDeviceFactory
     {
         private readonly IServiceProvider serviceProvider;
 
-        public ChannelFactory(IServiceProvider serviceProvider)
+        public DeviceFactory(IServiceProvider serviceProvider)
             => this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
         public Props CreateProps(string identifer)
-            => Props.FromProducer(() => new Channel(
+            => Props.FromProducer(() => new Device(
                 identifer,
-                this.serviceProvider.GetRequiredService<IParameterFactory>(),
+                this.serviceProvider.GetRequiredService<IChannelFactory>(),
                 this.serviceProvider.GetRequiredService<IHttpClientFactory>(),
-                this.serviceProvider.GetRequiredService<ILogger<Channel>>()
+                this.serviceProvider.GetRequiredService<ILogger<Device>>()
             ));
     }
 }

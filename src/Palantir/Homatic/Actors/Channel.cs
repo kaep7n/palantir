@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Palantir.Homematic
+namespace Palantir.Homatic.Actors
 {
     public class Channel : IActor
     {
@@ -32,9 +32,9 @@ namespace Palantir.Homematic
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted(context);
+                    await this.OnStarted(context).ConfigureAwait(false);
                     break;
-                case DeviceData msg:
+                case DeviceParameterValue msg:
                     this.OnDeviceData(context, msg);
                     break;
                 default:
@@ -48,7 +48,7 @@ namespace Palantir.Homematic
             {
                 var httpClient = this.httpClientFactory.CreateClient();
 
-                this.channelInformation = await httpClient.GetFromJsonAsync<ChannelInformation>($"http://192.168.2.101:2121/device/{this.identifier}");
+                this.channelInformation = await httpClient.GetFromJsonAsync<ChannelInformation>($"http://192.168.2.101:2121/device/{this.identifier}").ConfigureAwait(false);
 
                 foreach (var parameterLink in this.channelInformation.Links)
                 {
@@ -71,7 +71,7 @@ namespace Palantir.Homematic
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceData msg)
+        private void OnDeviceData(IContext context, DeviceParameterValue msg)
         {
             if (!this.parameters.TryGetValue(msg.Parameter, out var parameterPid))
                 this.logger.LogWarning("parameter {identifier} does not exist", msg.Device);

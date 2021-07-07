@@ -1,8 +1,8 @@
 ﻿using Proto;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
-    public interface IParameterFactory
+    public interface IChannelFactory
     {
         Props CreateProps(string identifer);
     }

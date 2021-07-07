@@ -1,6 +1,6 @@
 ﻿using Proto;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
     public interface IDeviceFactory
     {

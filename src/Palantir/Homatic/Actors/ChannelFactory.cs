@@ -4,21 +4,21 @@ using Proto;
 using System;
 using System.Net.Http;
 
-namespace Palantir
+namespace Palantir.Homatic.Actors
 {
-    public class DeviceFactory : IDeviceFactory
+    public class ChannelFactory : IChannelFactory
     {
         private readonly IServiceProvider serviceProvider;
 
-        public DeviceFactory(IServiceProvider serviceProvider)
+        public ChannelFactory(IServiceProvider serviceProvider)
             => this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
         public Props CreateProps(string identifer)
-            => Props.FromProducer(() => new Device(
+            => Props.FromProducer(() => new Channel(
                 identifer,
-                this.serviceProvider.GetRequiredService<IChannelFactory>(),
+                this.serviceProvider.GetRequiredService<IParameterFactory>(),
                 this.serviceProvider.GetRequiredService<IHttpClientFactory>(),
-                this.serviceProvider.GetRequiredService<ILogger<Device>>()
+                this.serviceProvider.GetRequiredService<ILogger<Channel>>()
             ));
     }
 }
