@@ -76,7 +76,7 @@ namespace Palantir.Homatic
                 var dataString = e.ApplicationMessage.ConvertPayloadToString();
                 var data = JsonSerializer.Deserialize<VeapMessage>(dataString);
 
-                var deviceData = new DeviceParameterValue(device, channel, type,
+                var deviceData = new ParameterValueChanged(device, channel, type,
                     DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp),
                     data.Value,
                     data.Status

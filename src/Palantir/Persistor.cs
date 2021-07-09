@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using Palantir.Homatic;
 using Proto;
 using System;
 using System.Threading.Tasks;
-using Palantir.Homatic;
 
 namespace Palantir
 {
@@ -26,11 +26,11 @@ namespace Palantir
                     this.logger.LogInformation("persistor started");
                 }
 
-                if (context.Message is DeviceParameterValue msg)
+                if (context.Message is EnrichedParameterValueChanged msg)
                 {
                     this.logger.LogDebug("received message {message}", msg);
 
-                    var response = await this.client.Client.IndexAsync(msg, idx => idx.Index($"homatic-{msg.Parameter.ToLower()}-{msg.Timestamp:yyyy-MM}")).ConfigureAwait(false);
+                    var response = await this.client.Client.IndexAsync(msg, idx => idx.Index($"homatic-{msg.Parameter.Id.ToLower()}-{msg.Timestamp:yyyy-MM}")).ConfigureAwait(false);
 
                     this.logger.LogInformation("elastic response: {response}", response);
                 }

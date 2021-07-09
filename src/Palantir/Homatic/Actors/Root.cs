@@ -21,7 +21,7 @@ namespace Palantir.Homatic.Actors
             => context.Message switch
             {
                 Started => this.OnStarted(context),
-                DeviceParameterValue => this.ForwardToDeviceController(context),
+                ParameterValueChanged => this.ForwardToDeviceController(context),
                 GetDeviceStates => this.ForwardToDeviceController(context),
                 _ => Task.CompletedTask
             };

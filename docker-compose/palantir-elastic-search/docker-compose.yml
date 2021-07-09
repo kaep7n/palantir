@@ -70,6 +70,16 @@ services:
       ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
     networks:
       - elastic
+   
+  comrade:
+    image: mosheza/elasticsearch-comrade
+    container_name: comrade
+    ports:
+      - 5701:8000
+    volumes:
+      - comrade:/app/comrade/clusters/
+    networks:
+      - elastic
 
 volumes:
   data01:
@@ -90,6 +100,12 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '../../../palantir-data/es03'
+  comrade:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '../../../palantir-data/comrade'
 
 networks:
   elastic:

@@ -13,9 +13,10 @@ namespace Palantir.Homatic.Actors
         public ChannelFactory(IServiceProvider serviceProvider)
             => this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-        public Props CreateProps(string identifer)
+        public Props CreateProps(string identifer, DeviceInformation parentDevice)
             => Props.FromProducer(() => new Channel(
                 identifer,
+                parentDevice,
                 this.serviceProvider.GetRequiredService<IParameterFactory>(),
                 this.serviceProvider.GetRequiredService<IHttpClientFactory>(),
                 this.serviceProvider.GetRequiredService<ILogger<Channel>>()

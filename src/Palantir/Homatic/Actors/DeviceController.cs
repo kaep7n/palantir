@@ -28,7 +28,7 @@ namespace Palantir.Homatic.Actors
                 case Started:
                     await this.OnStarted(context).ConfigureAwait(false);
                     break;
-                case DeviceParameterValue msg:
+                case ParameterValueChanged msg:
                     this.OnDeviceData(context, msg);
                     break;
                 case GetDeviceStates:
@@ -70,7 +70,7 @@ namespace Palantir.Homatic.Actors
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceParameterValue msg)
+        private void OnDeviceData(IContext context, ParameterValueChanged msg)
         {
             if (!this.devices.TryGetValue(msg.Device, out var devicePid))
                 this.logger.LogWarning("device {identifier} does not exist", msg.Device);

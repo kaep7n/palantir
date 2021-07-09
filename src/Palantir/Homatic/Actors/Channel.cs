@@ -11,6 +11,7 @@ namespace Palantir.Homatic.Actors
     public class Channel : IActor
     {
         private readonly string identifier;
+        private readonly DeviceInformation parentDevice;
         private readonly IParameterFactory parameterFactory;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<Channel> logger;
@@ -19,9 +20,10 @@ namespace Palantir.Homatic.Actors
 
         private ChannelInformation channelInformation;
 
-        public Channel(string identifier, IParameterFactory parameterFactory, IHttpClientFactory httpClientFactory, ILogger<Channel> logger)
+        public Channel(string identifier, DeviceInformation parentDevice, IParameterFactory parameterFactory, IHttpClientFactory httpClientFactory, ILogger<Channel> logger)
         {
             this.identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            this.parentDevice = parentDevice ?? throw new ArgumentNullException(nameof(parentDevice));
             this.parameterFactory = parameterFactory ?? throw new ArgumentNullException(nameof(parameterFactory));
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -32,12 +34,11 @@ namespace Palantir.Homatic.Actors
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted(context).ConfigureAwait(false);
+                    await this.OnStarted(context)
+                        .ConfigureAwait(false);
                     break;
-                case DeviceParameterValue msg:
+                case ParameterValueChanged msg:
                     this.OnDeviceData(context, msg);
-                    break;
-                default:
                     break;
             }
         }
@@ -57,7 +58,7 @@ namespace Palantir.Homatic.Actors
                     if (parameterLink.Rel != "parameter")
                         continue;
 
-                    var props = this.parameterFactory.CreateProps($"{this.identifier}/{parameterLink.Href}");
+                    var props = this.parameterFactory.CreateProps($"{this.identifier}/{parameterLink.Href}", this.parentDevice, this.channelInformation);
                     var pid = context.Spawn(props);
 
                     this.parameters.Add(parameterLink.Href, pid);
@@ -71,7 +72,7 @@ namespace Palantir.Homatic.Actors
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceParameterValue msg)
+        private void OnDeviceData(IContext context, ParameterValueChanged msg)
         {
             if (!this.parameters.TryGetValue(msg.Parameter, out var parameterPid))
                 this.logger.LogWarning("parameter {identifier} does not exist", msg.Device);

@@ -34,7 +34,7 @@ namespace Palantir.Homatic.Actors
                 case Started:
                     await this.OnStarted(context).ConfigureAwait(false);
                     break;
-                case DeviceParameterValue msg:
+                case ParameterValueChanged msg:
                     this.OnDeviceData(context, msg);
                     break;
                 case GetDeviceState:
@@ -58,7 +58,7 @@ namespace Palantir.Homatic.Actors
                     if (channelLink.IsParentRef)
                         continue;
 
-                    var props = this.channelFactory.CreateProps($"{this.identifier}/{channelLink.Href}");
+                    var props = this.channelFactory.CreateProps($"{this.identifier}/{channelLink.Href}", this.information);
                     var pid = context.Spawn(props);
 
                     this.channels.Add(channelLink.Href, pid);
@@ -72,7 +72,7 @@ namespace Palantir.Homatic.Actors
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceParameterValue msg)
+        private void OnDeviceData(IContext context, ParameterValueChanged msg)
         {
             if (!this.channels.TryGetValue(msg.Channel, out var channelPid))
                 this.logger.LogWarning("channel {identifier} does not exist", msg.Device);

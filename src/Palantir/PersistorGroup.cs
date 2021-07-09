@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Palantir.Homatic;
 using Proto;
 using Proto.DependencyInjection;
 using Proto.Router;
 using System.Threading.Tasks;
-using Palantir.Homatic;
 
 namespace Palantir
 {
@@ -25,8 +25,8 @@ namespace Palantir
                 var poolProps = context.NewRoundRobinPool(persistorProps, 5);
                 var pid = context.Spawn(poolProps);
 
-                this.logger.LogInformation("subscribing to message {device-data-type}", typeof(DeviceParameterValue));
-                context.System.EventStream.Subscribe<DeviceParameterValue>(msg =>
+                this.logger.LogInformation("subscribing to message {device-data-type}", typeof(EnrichedParameterValueChanged));
+                context.System.EventStream.Subscribe<EnrichedParameterValueChanged>(msg =>
                 {
                     this.logger.LogDebug("sending message to pool {pool}", pid);
                     context.Send(pid, msg);

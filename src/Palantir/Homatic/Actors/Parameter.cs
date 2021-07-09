@@ -3,6 +3,7 @@ using Proto;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -11,15 +12,22 @@ namespace Palantir.Homatic.Actors
     public class Parameter : IActor
     {
         private readonly string identifier;
+        private readonly DeviceInformation parentDevice;
+        private readonly ChannelInformation parentChannel;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly ILogger<Parameter> logger;
 
         private ParameterInformation parameterInformation;
-        private DeviceParameterValue current;
+        private ParameterValueChanged current;
 
-        public Parameter(string identifier, IHttpClientFactory httpClientFactory, ILogger<Parameter> logger)
+        public Parameter(string identifier,
+            DeviceInformation parentDevice,
+            ChannelInformation parentChannel,
+            IHttpClientFactory httpClientFactory, ILogger<Parameter> logger)
         {
             this.identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            this.parentDevice = parentDevice ?? throw new ArgumentNullException(nameof(parentDevice));
+            this.parentChannel = parentChannel ?? throw new ArgumentNullException(nameof(parentChannel));
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -29,12 +37,11 @@ namespace Palantir.Homatic.Actors
             switch (context.Message)
             {
                 case Started:
-                    await this.OnStarted().ConfigureAwait(false);
+                    await this.OnStarted()
+                        .ConfigureAwait(false);
                     break;
-                case DeviceParameterValue msg:
-                    this.OnDeviceData(context, msg);
-                    break;
-                default:
+                case ParameterValueChanged msg:
+                    this.OnValueChanged(context, msg);
                     break;
             }
         }
@@ -55,11 +62,15 @@ namespace Palantir.Homatic.Actors
             }
         }
 
-        private void OnDeviceData(IContext context, DeviceParameterValue msg)
+        private void OnValueChanged(IContext context, ParameterValueChanged msg)
         {
             try
             {
                 this.current = msg;
+
+                using var hasher = SHA1.Create();
+
+                var fingerPrint = $"{this.identifier}/{msg.Timestamp.Ticks}";
 
                 var value = (JsonElement)msg.Value;
 
@@ -68,11 +79,20 @@ namespace Palantir.Homatic.Actors
                     "INTEGER" => value.GetInt32(),
                     "FLOAT" => value.GetDouble(),
                     "BOOL" => value.GetBoolean(),
-                    "ENUM" => value.GetString(),
+                    "ENUM" => value.GetInt32(),
                     _ => throw new Exception($"unexpected type {this.parameterInformation.Type}"),
                 };
 
-                context.System.EventStream.Publish(msg with { Value = convertedValue });
+                var enrichedMessage = new EnrichedParameterValueChanged(fingerPrint,
+                   msg.Timestamp,
+                   new(this.parentDevice.Identifier, parentDevice.Title),
+                   new(this.parentChannel.Identifier, parentChannel.Title),
+                   new(this.parameterInformation.Identifier, this.parameterInformation.Title),
+                   convertedValue,
+                   msg.Status
+                   );
+
+                context.System.EventStream.Publish(enrichedMessage);
 
                 this.logger.LogInformation("received {data}", msg);
             }
