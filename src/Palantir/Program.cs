@@ -1,18 +1,25 @@
+using Elasticsearch.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Nest;
+using Palantir.Homatic;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Palantir
 {
     public class Program
     {
-        public static void Main(string[] args)
-            => CreateHostBuilder(args).Build().Run();
+        public static async Task Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
@@ -22,7 +29,7 @@ namespace Palantir
                         .WriteTo.Console(
                         outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}")
                         .WriteTo.Elasticsearch(
-                            new ElasticsearchSinkOptions(context.Configuration.GetValue<IEnumerable<Uri>>("elasticSearch:nodes"))
+                            new ElasticsearchSinkOptions(new []{ new Uri("https://elastic.kaeptn.dev")})
                             {
                                 IndexFormat = new StringBuilder()
                                     .Append(typeof(Program).Assembly.GetName().Name.ToLower())
