@@ -6,22 +6,15 @@ namespace Palantir.Homatic
     /// VEAP Protocol Message
     /// https://github.com/mdzio/veap/blob/master/README_de.md
     /// </summary>
-    public record VeapMessage
+    public record VeapMessage(long Timestamp, object Value, int Status)
     {
-        public VeapMessage(long timestamp, object value, int status)
-        {
-            this.Timestamp = timestamp;
-            this.Value = value;
-            this.Status = status;
-        }
-
         [JsonPropertyName("ts")]
-        public long Timestamp { get; set; }
+        public long Timestamp { get; set; } = Timestamp;
 
         [JsonPropertyName("v")]
-        public object Value { get; set; }
+        public object Value { get; set; } = Value;
 
         [JsonPropertyName("s")]
-        public int Status { get; set; }
+        public int Status { get; set; } = Status;
     }
 }

@@ -7,9 +7,10 @@ services:
     environment:
       - node.name=es01
       - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      # - discovery.seed_hosts=es02,es03
+      # - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
+      - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
@@ -18,47 +19,47 @@ services:
     volumes:
       - data01:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - "9200:9200"
     networks:
       - elastic
 
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
-    container_name: es02
-    environment:
-      - node.name=es02
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data02:/usr/share/elasticsearch/data
-    networks:
-      - elastic
-
-  es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
-    container_name: es03
-    environment:
-      - node.name=es03
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data03:/usr/share/elasticsearch/data
-    networks:
-      - elastic
+#  es02:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+#    container_name: es02
+#    environment:
+#      - node.name=es02
+#      - cluster.name=es-docker-cluster
+#      - discovery.seed_hosts=es01,es03
+#      - cluster.initial_master_nodes=es01,es02,es03
+#      - bootstrap.memory_lock=true
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#    volumes:
+#      - data02:/usr/share/elasticsearch/data
+#    networks:
+#      - elastic
+#
+#  es03:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+#    container_name: es03
+#    environment:
+#      - node.name=es03
+#      - cluster.name=es-docker-cluster
+#      - discovery.seed_hosts=es01,es02
+#      - cluster.initial_master_nodes=es01,es02,es03
+#      - bootstrap.memory_lock=true
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#    volumes:
+#      - data03:/usr/share/elasticsearch/data
+#    networks:
+#      - elastic
 
   kib01:
     image: docker.elastic.co/kibana/kibana:7.13.2
@@ -75,7 +76,7 @@ services:
     image: mosheza/elasticsearch-comrade
     container_name: comrade
     ports:
-      - 5701:8000
+      - "5701:8000"
     volumes:
       - comrade:/app/comrade/clusters/
     networks:
@@ -88,18 +89,18 @@ volumes:
       type: 'none'
       o: 'bind'
       device: '../../../palantir-data/es01'
-  data02:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '../../../palantir-data/es02'
-  data03:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '../../../palantir-data/es03'
+#  data02:
+#    driver: local
+#    driver_opts:
+#      type: 'none'
+#      o: 'bind'
+#      device: '../../../palantir-data/es02'
+#  data03:
+#    driver: local
+#    driver_opts:
+#      type: 'none'
+#      o: 'bind'
+#      device: '../../../palantir-data/es03'
   comrade:
     driver: local
     driver_opts:
