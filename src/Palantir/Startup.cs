@@ -25,7 +25,7 @@ namespace Palantir
             services.Configure<ElasticConfiguration>(this.Configuration.GetSection("elasticSearch"));
             services.AddTransient<PersistorClient>();
 
-            var config = ActorSystemConfig.Setup().WithMetricsProviders(new PrometheusConfigurator());
+            var config = ActorSystemConfig.Setup();
 
             services.AddSingleton(serviceProvider =>
                     new ActorSystem(config)

@@ -1,24 +1,18 @@
-using Elasticsearch.Net;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Nest;
-using Palantir.Homatic;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Palantir
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static int Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
+            return 0;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
