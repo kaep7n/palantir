@@ -12,6 +12,7 @@ builder.Services.AddSingleton(p => new ActorSystem().WithServiceProvider(p));
 
 builder.Services.AddTransient<ApartmentActor>();
 builder.Services.AddTransient<HomaticActor>();
+builder.Services.AddTransient<HomaticMqttActor>();
 
 builder.Services.Configure<HomaticOptions>(builder.Configuration.GetSection("Homatic"));
 builder.Services.AddHttpClient<HomaticHttpClient>((p, c) =>

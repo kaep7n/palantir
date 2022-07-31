@@ -1,23 +1,20 @@
-﻿using Microsoft.Extensions.Options;
-using Proto;
+﻿using Proto;
 
 namespace Palantir
 {
-    public class HomaticOptions
+    public class HomaticDeviceActor : IActor
     {
-        public string Url { get; set; } = string.Empty;
-    }
-
-    public class HomaticActor : IActor
-    {
+        private readonly string id;
         private readonly HomaticHttpClient homaticClient;
-        private readonly IOptionsMonitor<HomaticOptions> optionsMonitor;
         private readonly ILogger<HomaticActor> logger;
 
-        public HomaticActor(HomaticHttpClient homaticClient, IOptionsMonitor<HomaticOptions> optionsMonitor, ILogger<HomaticActor> logger)
+        public HomaticDeviceActor(
+            string id,
+            HomaticHttpClient homaticClient,
+            ILogger<HomaticActor> logger)
         {
+            this.id = id ?? throw new ArgumentNullException(nameof(id));
             this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
-            this.optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -27,7 +24,7 @@ namespace Palantir
             {
                 logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
 
-                var devices = await homaticClient.GetDevicesAsync();
+                var device = await homaticClient.GetDeviceAsync(id);
             }
             if (context.Message is Stopped)
             {

@@ -10,10 +10,10 @@ public class HomaticHttpClient
     }
 
     public async Task<Devices> GetDevicesAsync()
-    {
-        var devices = await http.GetFromJsonAsync<Devices>("device")
+        => await http.GetFromJsonAsync<Devices>("device")
             .ConfigureAwait(false);
 
-        return devices ?? new Devices(string.Empty, string.Empty, string.Empty, Array.Empty<Link>());
-    }
+    public async Task<Device> GetDeviceAsync(string id)
+        => await http.GetFromJsonAsync<Device>($"device/{id}")
+            .ConfigureAwait(false);
 }
