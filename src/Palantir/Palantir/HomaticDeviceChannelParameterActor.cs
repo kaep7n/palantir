@@ -1,21 +1,24 @@
 ﻿using Proto;
-using Proto.DependencyInjection;
 
 namespace Palantir
 {
-    public class HomaticDeviceActor : IActor
+    public class HomaticDeviceChannelParameterActor : IActor
     {
+        private readonly string deviceId;
+        private readonly string channelId;
         private readonly string id;
         private readonly HomaticHttpClient homaticClient;
         private readonly ILogger<HomaticActor> logger;
 
-        private readonly Dictionary<string, PID> channels = new Dictionary<string, PID>();
-
-        public HomaticDeviceActor(
+        public HomaticDeviceChannelParameterActor(
+            string deviceId,
+            string channelId,
             string id,
             HomaticHttpClient homaticClient,
             ILogger<HomaticActor> logger)
         {
+            this.deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
+            this.channelId = channelId ?? throw new ArgumentNullException(nameof(channelId));
             this.id = id ?? throw new ArgumentNullException(nameof(id));
             this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -27,18 +30,7 @@ namespace Palantir
             {
                 logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
 
-                var device = await homaticClient.GetDeviceAsync(id);
-
-                foreach (var link in device.Links)
-                {
-                    if (link.Href == "..")
-                        continue;
-
-                    var props = context.System.DI().PropsFor<HomaticDeviceChannelActor>(id, link.Href);
-                    var pid = context.Spawn(props);
-
-                    channels.Add(link.Href, pid);
-                }
+                var parameter = await homaticClient.GetParameterAsync(deviceId, channelId, id);
             }
             if (context.Message is Stopped)
             {

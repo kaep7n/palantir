@@ -3,6 +3,10 @@ using Palantir;
 using Proto;
 using Proto.DependencyInjection;
 
+//Configure ProtoActor to use Console logger
+Log.SetLoggerFactory(
+    LoggerFactory.Create(l => l.AddConsole().SetMinimumLevel(LogLevel.Error)));
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();

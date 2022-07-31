@@ -3,18 +3,23 @@ using Proto.DependencyInjection;
 
 namespace Palantir
 {
-    public class HomaticActor : IActor
+    public class HomaticDeviceChannelActor : IActor
     {
+        private readonly string deviceId;
+        private readonly string id;
         private readonly HomaticHttpClient homaticClient;
         private readonly ILogger<HomaticActor> logger;
 
-        private Dictionary<string, PID> devices = new Dictionary<string, PID>();
-        private PID mqtt;
+        private readonly Dictionary<string, PID> parameters = new Dictionary<string, PID>();
 
-        public HomaticActor(
+        public HomaticDeviceChannelActor(
+            string deviceId,
+            string id,
             HomaticHttpClient homaticClient,
             ILogger<HomaticActor> logger)
         {
+            this.deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
+            this.id = id ?? throw new ArgumentNullException(nameof(id));
             this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -25,28 +30,18 @@ namespace Palantir
             {
                 logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
 
-                var devices = await homaticClient.GetDevicesAsync();
+                var channel = await homaticClient.GetChannelAsync(deviceId, id);
 
-                foreach (var link in devices.Links)
+                foreach (var link in channel.Links)
                 {
-                    if (link.Href == "..")
+                    if (link.Href == ".." || link.Rel != "parameter")
                         continue;
 
-                    var props = context.System.DI().PropsFor<HomaticDeviceActor>(link.Href);
+                    var props = context.System.DI().PropsFor<HomaticDeviceChannelParameterActor>(deviceId, id, link.Href);
                     var pid = context.Spawn(props);
 
-                    this.devices.Add(link.Href, pid);
+                    parameters.Add(link.Href, pid);
                 }
-
-                var mqttProps = context.System.DI().PropsFor<HomaticMqttActor>();
-                mqtt = context.Spawn(mqttProps);
-            }
-            if (context.Message is ParameterValueChanged pvc)
-            {
-                logger.LogInformation("forwarding to device {device}", pvc.Device);
-
-                var device = this.devices[pvc.Device];
-                context.Forward(device);
             }
             if (context.Message is Stopped)
             {
