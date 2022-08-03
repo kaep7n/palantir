@@ -18,22 +18,22 @@ public class HomaticHttpClient
             .ConfigureAwait(false);
 
     public async Task<Channel> GetChannelAsync(string deviceId, string id)
-   => await http.GetFromJsonAsync<Channel>($"device/{deviceId}/{id}")
+        => await http.GetFromJsonAsync<Channel>($"device/{deviceId}/{id}")
             .ConfigureAwait(false);
 
     public async Task<Parameter> GetParameterAsync(string deviceId, string channelId, string parameterId)
         => await http.GetFromJsonAsync<Parameter>($"device/{deviceId}/{channelId}/{parameterId}")
-            .ConfigureAwait(false);
+                .ConfigureAwait(false);
 }
 
 public record Parameter(
     [property: JsonPropertyName("control")] string Control,
-    [property: JsonPropertyName("default")] int Default,
+    [property: JsonPropertyName("default")] object Default,
     [property: JsonPropertyName("flags")] int Flags,
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("identifier")] string Identifier,
-    [property: JsonPropertyName("maximum")] int Maximum,
-    [property: JsonPropertyName("minimum")] int Minimum,
+    [property: JsonPropertyName("maximum")] object Maximum,
+    [property: JsonPropertyName("minimum")] object Minimum,
     [property: JsonPropertyName("mqttStatusTopic")] string MqttStatusTopic,
     [property: JsonPropertyName("operations")] int Operations,
     [property: JsonPropertyName("tabOrder")] int TabOrder,

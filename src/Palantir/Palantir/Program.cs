@@ -2,12 +2,24 @@ using Microsoft.Extensions.Options;
 using Palantir;
 using Proto;
 using Proto.DependencyInjection;
+using Serilog;
+using Log = Proto.Log;
 
 //Configure ProtoActor to use Console logger
 Log.SetLoggerFactory(
-    LoggerFactory.Create(l => l.AddConsole().SetMinimumLevel(LogLevel.Error)));
+    LoggerFactory.Create(l => l
+        .AddConsole()
+        .SetMinimumLevel(LogLevel.Information))
+    );
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, l) =>
+{
+    l.MinimumLevel.Information()
+     .WriteTo.Console()
+     .WriteTo.File("logs/log.txt");
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

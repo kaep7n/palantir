@@ -28,9 +28,16 @@ namespace Palantir
         {
             if (context.Message is Started)
             {
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                try
+                {
+                    logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
 
-                var parameter = await homaticClient.GetParameterAsync(deviceId, channelId, id);
+                    var parameter = await homaticClient.GetParameterAsync(deviceId, channelId, id);
+                }
+                catch (Exception exception)
+                {
+                    logger.LogError(exception, $"HomaticDeviceChannelParameterActor {deviceId}/{channelId}/{id}");
+                }
             }
             if (context.Message is Stopped)
             {

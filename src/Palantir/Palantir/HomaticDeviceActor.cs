@@ -25,19 +25,26 @@ namespace Palantir
         {
             if (context.Message is Started)
             {
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
-
-                var device = await homaticClient.GetDeviceAsync(id);
-
-                foreach (var link in device.Links)
+                try
                 {
-                    if (link.Href == "..")
-                        continue;
+                    logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
 
-                    var props = context.System.DI().PropsFor<HomaticDeviceChannelActor>(id, link.Href);
-                    var pid = context.Spawn(props);
+                    var device = await homaticClient.GetDeviceAsync(id);
 
-                    channels.Add(link.Href, pid);
+                    foreach (var link in device.Links)
+                    {
+                        if (link.Href == "..")
+                            continue;
+
+                        var props = context.System.DI().PropsFor<HomaticDeviceChannelActor>(id, link.Href);
+                        var pid = context.Spawn(props);
+
+                        channels.Add(link.Href, pid);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    logger.LogError(exception, "HomaticDeviceActor");
                 }
             }
             if (context.Message is Stopped)

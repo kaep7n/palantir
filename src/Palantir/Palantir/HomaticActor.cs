@@ -23,23 +23,30 @@ namespace Palantir
         {
             if (context.Message is Started)
             {
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
-
-                var devices = await homaticClient.GetDevicesAsync();
-
-                foreach (var link in devices.Links)
+                try
                 {
-                    if (link.Href == "..")
-                        continue;
+                    logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
 
-                    var props = context.System.DI().PropsFor<HomaticDeviceActor>(link.Href);
-                    var pid = context.Spawn(props);
+                    var devices = await homaticClient.GetDevicesAsync();
 
-                    this.devices.Add(link.Href, pid);
+                    foreach (var link in devices.Links)
+                    {
+                        if (link.Href == "..")
+                            continue;
+
+                        var props = context.System.DI().PropsFor<HomaticDeviceActor>(link.Href);
+                        var pid = context.Spawn(props);
+
+                        this.devices.Add(link.Href, pid);
+                    }
+
+                    var mqttProps = context.System.DI().PropsFor<HomaticMqttActor>();
+                    mqtt = context.Spawn(mqttProps);
                 }
-
-                var mqttProps = context.System.DI().PropsFor<HomaticMqttActor>();
-                mqtt = context.Spawn(mqttProps);
+                catch (Exception exception)
+                {
+                    logger.LogError(exception, "HomaticActor");
+                }
             }
             if (context.Message is ParameterValueChanged pvc)
             {
