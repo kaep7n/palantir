@@ -25,7 +25,7 @@ namespace Palantir
             {
                 try
                 {
-                    logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                    logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
 
                     var devices = await homaticClient.GetDevicesAsync();
 
@@ -50,14 +50,16 @@ namespace Palantir
             }
             if (context.Message is ParameterValueChanged pvc)
             {
-                logger.LogInformation("forwarding to device {device}", pvc.Device);
-
                 var device = this.devices[pvc.Device];
                 context.Forward(device);
             }
+            if (context.Message is JoinRoom)
+            {
+                context.Forward(context.Parent);
+            }
             if (context.Message is Stopped)
             {
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
             }
         }
     }

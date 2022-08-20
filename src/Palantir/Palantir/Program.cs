@@ -17,7 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((ctx, l) =>
 {
     l.MinimumLevel.Information()
-     .WriteTo.Console()
+     .MinimumLevel.Override("System.Net.Http", Serilog.Events.LogEventLevel.Warning)
+     .WriteTo.Console(outputTemplate: "Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
      .WriteTo.File("logs/log.txt");
 });
 

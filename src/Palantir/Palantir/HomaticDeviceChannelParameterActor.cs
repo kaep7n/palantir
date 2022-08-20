@@ -9,6 +9,8 @@ namespace Palantir
         private readonly string id;
         private readonly HomaticHttpClient homaticClient;
         private readonly ILogger<HomaticActor> logger;
+        private Parameter parameter;
+        private object currentValue;
 
         public HomaticDeviceChannelParameterActor(
             string deviceId,
@@ -30,18 +32,34 @@ namespace Palantir
             {
                 try
                 {
-                    logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                    logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
 
-                    var parameter = await homaticClient.GetParameterAsync(deviceId, channelId, id);
+                    this.parameter = await homaticClient.GetParameterAsync(deviceId, channelId, id);
                 }
                 catch (Exception exception)
                 {
                     logger.LogError(exception, $"HomaticDeviceChannelParameterActor {deviceId}/{channelId}/{id}");
                 }
             }
+            if (context.Message is ParameterValueChanged pvc)
+            {
+                if (this.currentValue != pvc.Value)
+                {
+                    this.logger.LogInformation(
+                        "{deviceId}/{channelId}/{parameter} value has changed from '{currentValue}' to '{newValue}'",
+                        this.deviceId,
+                        this.channelId,
+                        this.id,
+                        this.currentValue,
+                        pvc.Value
+                    );
+
+                    this.currentValue = pvc.Value;
+                }
+            }
             if (context.Message is Stopped)
             {
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
             }
         }
     }

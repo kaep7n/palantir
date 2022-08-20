@@ -23,13 +23,13 @@ namespace Palantir
             {
                 parent = context.Parent;
                 system = context.System;
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
 
                 await StartMqtt();
             }
             if (context.Message is Stopped)
             {
-                logger.LogInformation("{type} ({pid}) has started", GetType(), context.Self);
+                logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
             }
         }
 
