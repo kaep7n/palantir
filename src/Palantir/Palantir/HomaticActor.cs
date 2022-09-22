@@ -6,6 +6,7 @@ namespace Palantir
     public class HomaticActor : IActor
     {
         private readonly HomaticHttpClient homaticClient;
+        private readonly IEnumerable<Room> rooms;
         private readonly ILogger<HomaticActor> logger;
 
         private Dictionary<string, PID> devices = new Dictionary<string, PID>();
@@ -13,9 +14,11 @@ namespace Palantir
 
         public HomaticActor(
             HomaticHttpClient homaticClient,
+            IEnumerable<Room> rooms,
             ILogger<HomaticActor> logger)
         {
             this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
+            this.rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -53,14 +56,28 @@ namespace Palantir
                 var device = this.devices[pvc.Device];
                 context.Forward(device);
             }
-            if (context.Message is JoinRoom)
+            if (context.Message is JoinRoom joinRoom)
             {
-                context.Forward(context.Parent);
+                var roomPid = this.GetRoomPid(joinRoom.Room);
+                context.Forward(roomPid);
             }
             if (context.Message is Stopped)
             {
                 logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
             }
         }
+
+        private PID GetRoomPid(string homaticRoomId)
+            => homaticRoomId switch
+            {
+                "1230" => this.rooms.First(r => r.Name == "Esszimmer").Id,
+                "1226" => this.rooms.First(r => r.Name == "Küche").Id,
+                "1228" => this.rooms.First(r => r.Name == "Leon").Id,
+                "1229" => this.rooms.First(r => r.Name == "Linus").Id,
+                "1227" => this.rooms.First(r => r.Name == "Schlafzimmer").Id,
+                "1225" => this.rooms.First(r => r.Name == "Wohnzimmer").Id,
+                "1231" => this.rooms.First(r => r.Name == "Bad").Id,
+                _ => throw new InvalidOperationException($"Room mapping for id {homaticRoomId} not found."),
+            };
     }
 }

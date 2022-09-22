@@ -8,7 +8,7 @@ public class ApartmentActor : IActor
     private readonly ILogger<ApartmentActor> logger;
     private PID homatic = new();
 
-    private readonly Dictionary<string, PID> rooms = new();
+    private readonly List<Room> rooms = new();
 
     public ApartmentActor(ILogger<ApartmentActor> logger)
     {
@@ -21,31 +21,26 @@ public class ApartmentActor : IActor
         {
             logger.LogDebug("{type} ({pid}) has started", GetType(), context.Self);
 
-            var rooms = new List<Tuple<string, string>>
+            var rooms = new List<string>
             {
-                new("1230", "Esszimmer"),
-                new("1226", "Küche"),
-                new("1228", "Leon"),
-                new("1229", "Linus"),
-                new("1227", "Schlafzimmer"),
-                new("1225", "Wohnzimmer"),
-                new("1231", "Bad")
+                "Esszimmer",
+                "Küche",
+                "Leon",
+                "Linus",
+                "Schlafzimmer",
+                "Wohnzimmer",
+                "Bad"
             };
 
             foreach (var room in rooms)
             {
-                var roomProps = context.System.DI().PropsFor<RoomActor>(room.Item1, room.Item2);
+                var roomProps = context.System.DI().PropsFor<RoomActor>(room);
                 var roomActor = context.Spawn(roomProps);
-                this.rooms.Add(room.Item1, roomActor);
+                this.rooms.Add(new Room(roomActor, room));
             }
 
-            var props = context.System.DI().PropsFor<HomaticActor>();
+            var props = context.System.DI().PropsFor<HomaticActor>(this.rooms);
             homatic = context.Spawn(props);
-        }
-        if (context.Message is JoinRoom joinRoom)
-        {
-            var room = this.rooms[joinRoom.Room];
-            context.Forward(room);
         }
         if (context.Message is Stopped)
         {
