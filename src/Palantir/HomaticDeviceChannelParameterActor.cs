@@ -8,7 +8,7 @@ namespace Palantir
         private readonly string channelId;
         private readonly string id;
         private readonly HomaticHttpClient homaticClient;
-        private readonly ILogger<HomaticActor> logger;
+        private readonly ILogger<HomaticDeviceChannelParameterActor> logger;
         private Parameter parameter;
         private object currentValue;
 
@@ -17,7 +17,7 @@ namespace Palantir
             string channelId,
             string id,
             HomaticHttpClient homaticClient,
-            ILogger<HomaticActor> logger)
+            ILogger<HomaticDeviceChannelParameterActor> logger)
         {
             this.deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
             this.channelId = channelId ?? throw new ArgumentNullException(nameof(channelId));

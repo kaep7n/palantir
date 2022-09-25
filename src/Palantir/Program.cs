@@ -18,8 +18,8 @@ builder.Host.UseSerilog((ctx, l) =>
 {
     l.MinimumLevel.Information()
      .MinimumLevel.Override("System.Net.Http", Serilog.Events.LogEventLevel.Warning)
-     .WriteTo.Console(outputTemplate: "Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
-     .WriteTo.File("logs/log.txt");
+     .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3} {SourceContext}] {Message}{NewLine}{Exception}")
+     .WriteTo.File("logs/log.txt", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3} {SourceContext}] {Message}{NewLine}{Exception}");
 });
 
 builder.Services.AddEndpointsApiExplorer();

@@ -7,14 +7,14 @@ namespace Palantir
     {
         private readonly string id;
         private readonly HomaticHttpClient homaticClient;
-        private readonly ILogger<HomaticActor> logger;
+        private readonly ILogger<HomaticDeviceActor> logger;
 
         private readonly Dictionary<string, PID> channels = new Dictionary<string, PID>();
 
         public HomaticDeviceActor(
             string id,
             HomaticHttpClient homaticClient,
-            ILogger<HomaticActor> logger)
+            ILogger<HomaticDeviceActor> logger)
         {
             this.id = id ?? throw new ArgumentNullException(nameof(id));
             this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
