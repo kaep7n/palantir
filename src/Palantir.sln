@@ -1,9 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.31410.414
+VisualStudioVersion = 17.3.32714.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir", "Palantir\Palantir.csproj", "{84183AD5-83F2-4B05-A71B-E80E584BA6A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir", "Palantir\Palantir.csproj", "{E63A1FB0-5C3D-4800-871A-B582011FCA20}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".style", ".style", "{3DECAE41-F78E-454F-8F7D-06250D52BEB4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{72ED5DB5-760D-4D40-8DD3-7C0528151F25}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\build.yml = ..\..\.github\workflows\build.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +21,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{84183AD5-83F2-4B05-A71B-E80E584BA6A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84183AD5-83F2-4B05-A71B-E80E584BA6A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84183AD5-83F2-4B05-A71B-E80E584BA6A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84183AD5-83F2-4B05-A71B-E80E584BA6A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E63A1FB0-5C3D-4800-871A-B582011FCA20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E63A1FB0-5C3D-4800-871A-B582011FCA20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E63A1FB0-5C3D-4800-871A-B582011FCA20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E63A1FB0-5C3D-4800-871A-B582011FCA20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {EDB7D975-D2D8-4995-9D66-5CC26533725E}
+		SolutionGuid = {33B65BB7-2513-42EA-9373-341C04902FA2}
 	EndGlobalSection
 EndGlobal

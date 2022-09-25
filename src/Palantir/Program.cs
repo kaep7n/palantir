@@ -1,49 +1,52 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Palantir;
+using Proto;
+using Proto.DependencyInjection;
 using Serilog;
-using Serilog.Sinks.Elasticsearch;
-using System;
-using System.Text;
+using Log = Proto.Log;
 
-namespace Palantir
+//Configure ProtoActor to use Console logger
+Log.SetLoggerFactory(
+    LoggerFactory.Create(l => l
+        .AddConsole()
+        .SetMinimumLevel(LogLevel.Information))
+    );
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, l) =>
 {
-    public class Program
-    {
-        public static int Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-            return 0;
-        }
+    l.MinimumLevel.Information()
+     .MinimumLevel.Override("System.Net.Http", Serilog.Events.LogEventLevel.Warning)
+     .WriteTo.Console(outputTemplate: "Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
+     .WriteTo.File("logs/log.txt");
+});
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseSerilog((context, configuration) =>
-                {
-                    configuration.Enrich.FromLogContext()
-                        .WriteTo.Console(
-                        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}")
-                        .WriteTo.Elasticsearch(
-                            new ElasticsearchSinkOptions(new []{ new Uri("https://elastic.kaeptn.dev")})
-                            {
-                                IndexFormat = new StringBuilder()
-                                    .Append(typeof(Program).Assembly.GetName().Name.ToLower())
-                                    .Append('-')
-                                    .Append("logs")
-                                    .Append('-')
-                                    .Append(context.HostingEnvironment.EnvironmentName?.ToLower())
-                                    .Append('-')
-                                    .Append(DateTime.UtcNow.ToString("yyyy-MM"))
-                                    .ToString(),
-                                AutoRegisterTemplate = true,
-                                NumberOfShards = 2
-                            })
-                        .Enrich.WithMachineName()
-                        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName)
-                        .ReadFrom.Configuration(context.Configuration);
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton(p => new ActorSystem().WithServiceProvider(p));
+
+builder.Services.AddTransient<ApartmentActor>();
+builder.Services.AddTransient<HomaticActor>();
+builder.Services.AddTransient<HomaticMqttActor>();
+
+builder.Services.Configure<HomaticOptions>(builder.Configuration.GetSection("Homatic"));
+builder.Services.AddHttpClient<HomaticHttpClient>((p, c) =>
+{
+    var homaticOptions = p.GetRequiredService<IOptions<HomaticOptions>>();
+    c.BaseAddress = new Uri(homaticOptions.Value.Url);
+});
+
+builder.Services.AddHostedService<ActorSystemService>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.Run();
