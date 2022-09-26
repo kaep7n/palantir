@@ -1,7 +1,9 @@
-﻿using Proto;
+﻿using Palantir.Apartment;
+using Palantir.Homatic.Actors;
+using Proto;
 using Proto.DependencyInjection;
 
-namespace Palantir;
+namespace Palantir.Sys;
 
 public class ActorSystemService : IHostedService
 {
@@ -16,16 +18,20 @@ public class ActorSystemService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var props = actorSystem.DI().PropsFor<ApartmentActor>();
-        actorSystem.Root.Spawn(props);
-        this.logger.LogInformation("spawned {type}", typeof(ApartmentActor));
+        var props = this.actorSystem.DI().PropsFor<RootActor>();
+        var root = this.actorSystem.Root.Spawn(props);
+        this.logger.LogInformation("spawned {type}", typeof(RootActor));
+
+        var homaticProps = this.actorSystem.DI().PropsFor<HomaticActor>(root);
+        this.actorSystem.Root.Spawn(homaticProps);
+        this.logger.LogInformation("spawned {type}", typeof(HomaticActor));
 
         return Task.CompletedTask;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await actorSystem.ShutdownAsync()
+        await this.actorSystem.ShutdownAsync()
             .ConfigureAwait(false);
     }
 }

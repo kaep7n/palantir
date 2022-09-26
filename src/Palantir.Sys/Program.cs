@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Options;
-using Palantir;
+using Palantir.Apartment;
+using Palantir.Homatic.Extensions;
+using Palantir.Sys;
 using Proto;
 using Proto.DependencyInjection;
 using Serilog;
@@ -27,16 +28,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton(p => new ActorSystem().WithServiceProvider(p));
 
-builder.Services.AddTransient<ApartmentActor>();
-builder.Services.AddTransient<HomaticActor>();
-builder.Services.AddTransient<HomaticMqttActor>();
+builder.Services.AddTransient<RootActor>();
 
-builder.Services.Configure<HomaticOptions>(builder.Configuration.GetSection("Homatic"));
-builder.Services.AddHttpClient<HomaticHttpClient>((p, c) =>
-{
-    var homaticOptions = p.GetRequiredService<IOptions<HomaticOptions>>();
-    c.BaseAddress = new Uri(homaticOptions.Value.Url);
-});
+builder.Services.AddHomatic(builder.Configuration.GetValue<string>("Homatic:Url")!);
 
 builder.Services.AddHostedService<ActorSystemService>();
 

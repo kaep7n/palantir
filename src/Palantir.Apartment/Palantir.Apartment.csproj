@@ -9,7 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-  	<PackageReference Include="Proto.Actor" Version="1.0.0-rc3" />
+    <PackageReference Include="Proto.Actor" Version="1.0.0-rc3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Palantir\Palantir.csproj" />
   </ItemGroup>
 
 </Project>

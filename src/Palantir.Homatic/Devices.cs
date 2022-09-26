@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Palantir;
+namespace Palantir.Homatic;
 
 public record Devices(
     [property: JsonPropertyName("description")] string Description,
