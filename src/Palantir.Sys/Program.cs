@@ -4,24 +4,19 @@ using Palantir.Sys;
 using Proto;
 using Proto.DependencyInjection;
 using Serilog;
-using Log = Proto.Log;
 
-//Configure ProtoActor to use Console logger
-Log.SetLoggerFactory(
+Proto.Log.SetLoggerFactory(
     LoggerFactory.Create(l => l
-        .AddConsole()
-        .SetMinimumLevel(LogLevel.Information))
+        .AddSerilog()
+        .SetMinimumLevel(LogLevel.Information)
+        )
     );
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((ctx, l) =>
-{
-    l.MinimumLevel.Information()
-     .MinimumLevel.Override("System.Net.Http", Serilog.Events.LogEventLevel.Warning)
-     .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3} {SourceContext}] {Message}{NewLine}{Exception}")
-     .WriteTo.File("logs/log.txt", outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3} {SourceContext}] {Message}{NewLine}{Exception}");
-});
+builder.Host.UseSerilog((context, configuration)
+    => configuration.ReadFrom.Configuration(context.Configuration.GetSection("Logging"))
+);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
