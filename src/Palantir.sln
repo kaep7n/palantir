@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Sys", "Palantir.Sy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir", "Palantir\Palantir.csproj", "{23FBC106-BBC2-4B91-ABDF-0A2E641A7598}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir.Api", "Palantir.Api\Palantir.Api.csproj", "{96CE714E-E889-4595-AED4-CE35C92EEE9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{23FBC106-BBC2-4B91-ABDF-0A2E641A7598}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23FBC106-BBC2-4B91-ABDF-0A2E641A7598}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23FBC106-BBC2-4B91-ABDF-0A2E641A7598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96CE714E-E889-4595-AED4-CE35C92EEE9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96CE714E-E889-4595-AED4-CE35C92EEE9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96CE714E-E889-4595-AED4-CE35C92EEE9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96CE714E-E889-4595-AED4-CE35C92EEE9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
