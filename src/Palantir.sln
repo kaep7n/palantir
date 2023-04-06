@@ -9,17 +9,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".style", ".style", "{3DECAE
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{72ED5DB5-760D-4D40-8DD3-7C0528151F25}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\.github\workflows\build.yml = ..\..\.github\workflows\build.yml
-	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir.Homatic", "Palantir.Homatic\Palantir.Homatic.csproj", "{9B8C9AC6-24B5-413A-A065-A2E59FC7E139}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Homatic", "Palantir.Homatic\Palantir.Homatic.csproj", "{9B8C9AC6-24B5-413A-A065-A2E59FC7E139}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir.Apartment", "Palantir.Apartment\Palantir.Apartment.csproj", "{2F77DFD5-E947-4C87-8FF2-A964C69A513C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Apartment", "Palantir.Apartment\Palantir.Apartment.csproj", "{2F77DFD5-E947-4C87-8FF2-A964C69A513C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Sys", "Palantir.Sys\Palantir.Sys.csproj", "{6CAE0CCB-519B-4FD6-A795-119E718F2EB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir", "Palantir\Palantir.csproj", "{23FBC106-BBC2-4B91-ABDF-0A2E641A7598}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir", "Palantir\Palantir.csproj", "{23FBC106-BBC2-4B91-ABDF-0A2E641A7598}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
