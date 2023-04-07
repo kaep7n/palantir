@@ -42,10 +42,10 @@ public class HomaticDeviceChannelActor : IActor
 
                 foreach (var room in rooms)
                 {
-                    var joinRoom = new JoinRoom(this.deviceId, this.id, room.Href.Replace("/room/", string.Empty));
-                    var roomJoined = await context.RequestAsync<RoomJoined>(context.Parent, joinRoom, TimeSpan.FromSeconds(3));
+                    var joinRoom = new Join(this.deviceId, this.id, room.Href.Replace("/room/", string.Empty));
+                    var roomJoined = await context.RequestAsync<Joined>(context.Parent, joinRoom, TimeSpan.FromSeconds(3));
 
-                    this.rooms.Add(roomJoined.Room);
+                    this.rooms.Add(roomJoined.Pid);
                 }
 
                 foreach (var link in channel.Links)

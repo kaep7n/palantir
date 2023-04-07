@@ -22,10 +22,10 @@ public class RoomActor : IActor
         {
             this.logger.LogInformation("room {name} started", this.name);
         }
-        if (context.Message is JoinRoom joinRoom)
+        if (context.Message is Join joinRoom)
         {
             this.logger.LogInformation("room {name} has a new device {deviceId} with channel {channel}", this.name, joinRoom.DeviceId, joinRoom.ChannelId);
-            context.Respond(new RoomJoined(context.Self));
+            context.Respond(new Joined(context.Self));
         }
         if (context.Message is ValueChanged valueChanged)
         {

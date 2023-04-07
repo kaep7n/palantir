@@ -40,7 +40,7 @@ public class RootActor : IActor
                 this.rooms.Add(new Room(roomActor, room.Key, room.Value));
             }
         }
-        if (context.Message is JoinRoom joinRoom)
+        if (context.Message is Join joinRoom)
         {
             var room = this.rooms.FirstOrDefault(r => r.Id == joinRoom.Room);
 

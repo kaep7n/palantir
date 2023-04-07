@@ -1,8 +1,17 @@
+using Google.Protobuf.WellKnownTypes;
+using Palantir;
 using Palantir.Apartment;
 using Palantir.Homatic.Extensions;
 using Palantir.Sys;
 using Proto;
+using Proto.Cluster;
+using Proto.Cluster.Cache;
+using Proto.Cluster.Partition;
+using Proto.Cluster.PubSub;
+using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
+using Proto.Remote;
+using Proto.Remote.GrpcNet;
 using Serilog;
 
 Proto.Log.SetLoggerFactory(
@@ -21,7 +30,45 @@ builder.Host.UseSerilog((context, configuration)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton(p => new ActorSystem().WithServiceProvider(p));
+builder.Services.AddSingleton(p =>
+{
+    var actorSystemConfig = ActorSystemConfig
+        .Setup()
+        .WithMetrics()
+        .WithDeadLetterThrottleCount(3)
+        .WithDeadLetterThrottleInterval(TimeSpan.FromSeconds(1))
+        .WithDeveloperSupervisionLogging(true)
+        .WithDeadLetterRequestLogging(true)
+        .WithDeveloperThreadPoolStatsLogging(true);
+
+    var kvStore = new InMemoryKeyValueStore();
+
+    var remoteConfig = GrpcNetRemoteConfig
+            .BindToLocalhost()
+            .WithProtoMessages(EmptyReflection.Descriptor)
+            .WithProtoMessages(MessagesReflection.Descriptor)
+            .WithRemoteDiagnostics(true);
+
+    var clusterName = "palantir";
+    var clusterProvider = new TestProvider(new TestProviderOptions(), new InMemAgent());
+
+    var actorSystem = new ActorSystem(actorSystemConfig);
+
+    actorSystem
+            .WithServiceProvider(p)
+            .WithRemote(remoteConfig)
+            .WithCluster(ClusterConfig
+                .Setup(clusterName, clusterProvider, new PartitionIdentityLookup())
+                // explicit topic actor registration is needed to provide a key value store implementation
+                .WithClusterKind(TopicActor.Kind, Props.FromProducer(() => new TopicActor(kvStore)))
+            )
+            .Cluster()
+            .WithPidCacheInvalidation();
+
+    return actorSystem;
+});
+
+builder.Services.AddSingleton(provider => provider.GetRequiredService<ActorSystem>().Cluster());
 
 builder.Services.AddTransient<RootActor>();
 

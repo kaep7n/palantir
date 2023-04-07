@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option csharp_namespace = "Palantir";
+
+message Join {
+	string device_id = 1;
+	string channel_id = 2;
+	string room = 3;
+}
+
+message Joined {
+	bytes pid_bytes = 1;
+}

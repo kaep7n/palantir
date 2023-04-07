@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -6,12 +6,28 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>67da3945-fb5c-4922-8108-e59af41b3b22</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<LangVersion>preview</LangVersion>
+	<EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+	<PackageReference Include="Proto.Actor" Version="1.1.0" />
+	<PackageReference Include="Proto.Cluster" Version="1.1.0" />
+	<PackageReference Include="Proto.Cluster.CodeGen" Version="1.1.0" />
+	<PackageReference Include="Proto.Cluster.Dashboard" Version="1.1.0" />
+	<PackageReference Include="Proto.Cluster.Kubernetes" Version="1.1.0" />
+	<PackageReference Include="Proto.Cluster.TestProvider" Version="1.1.0" />
+	<PackageReference Include="Proto.OpenTelemetry" Version="1.1.0" />
+	<PackageReference Include="Proto.Remote" Version="1.1.0" />
+	<PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
+	<PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Palantir\Palantir.csproj" />
   </ItemGroup>
 
 </Project>

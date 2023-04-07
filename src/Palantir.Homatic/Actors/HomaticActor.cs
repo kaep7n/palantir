@@ -51,7 +51,7 @@ public class HomaticActor : IActor
                 this.logger.LogError(exception, "HomaticActor");
             }
         }
-        if (context.Message is JoinRoom)
+        if (context.Message is Join)
         {
             context.Forward(this.root);
         }

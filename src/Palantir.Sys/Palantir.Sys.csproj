@@ -14,6 +14,13 @@
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
 		<PackageReference Include="Proto.Actor" Version="1.1.0" />
+		<PackageReference Include="Proto.Cluster" Version="1.1.0" />
+		<PackageReference Include="Proto.Cluster.CodeGen" Version="1.1.0" />
+		<PackageReference Include="Proto.Cluster.Dashboard" Version="1.1.0" />
+		<PackageReference Include="Proto.Cluster.Kubernetes" Version="1.1.0" />
+		<PackageReference Include="Proto.Cluster.TestProvider" Version="1.1.0" />
+		<PackageReference Include="Proto.OpenTelemetry" Version="1.1.0" />
+		<PackageReference Include="Proto.Remote" Version="1.1.0" />
 		<PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
 		<PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
