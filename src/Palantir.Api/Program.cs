@@ -11,6 +11,7 @@ using Proto.DependencyInjection;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
 using Serilog;
+using StackExchange.Redis;
 
 Proto.Log.SetLoggerFactory(
     LoggerFactory.Create(l => l
@@ -41,7 +42,9 @@ builder.Services.AddSingleton(p =>
         .WithDeadLetterRequestLogging(true)
         .WithDeveloperThreadPoolStatsLogging(true);
 
-    var kvStore = new InMemoryKeyValueStore();
+    var multiplexer = ConnectionMultiplexer.Connect("localhost:6379");
+    var db = multiplexer.GetDatabase();
+    var kvStore = new RedisKeyValueStore(db, 50);
 
     var remoteConfig = GrpcNetRemoteConfig
             .BindToLocalhost()
@@ -80,8 +83,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 var summaries = new[]
 {

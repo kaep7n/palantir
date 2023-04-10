@@ -3,9 +3,9 @@ using Proto;
 
 namespace Palantir;
 
-public partial class Join
+public partial class JoinRoom
 {
-    public Join(string deviceId, string channelId, string room)
+    public JoinRoom(string deviceId, string channelId, string room)
     {
         this.DeviceId = deviceId;
         this.ChannelId = channelId;
@@ -13,9 +13,9 @@ public partial class Join
     }
 }
 
-public partial class Joined
+public partial class RoomJoined
 {
-    public Joined(PID pid)
+    public RoomJoined(PID pid)
     {
         this.PidBytes = pid.ToByteString();
     }

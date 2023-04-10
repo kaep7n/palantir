@@ -18,6 +18,10 @@ public class ActorSystemService : IHostedService
     {
         await this.actorSystem.Cluster()
              .StartMemberAsync();
+
+        var apartment = this.actorSystem.Cluster().GetApartmentGrain("Apartment");
+
+        var state = await apartment.GetState(new GetStateRequest() { Source = $"Api_{Guid.NewGuid()}" }, cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

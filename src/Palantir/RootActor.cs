@@ -2,7 +2,7 @@
 using Proto;
 using Proto.DependencyInjection;
 
-namespace Palantir.Apartment;
+namespace Palantir;
 
 public class RootActor : IActor
 {

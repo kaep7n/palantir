@@ -1,5 +1,5 @@
 ﻿using Proto;
 
-namespace Palantir.Apartment;
+namespace Palantir;
 
 public record Room(PID ActorId, string Id, string Name);

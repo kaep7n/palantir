@@ -1,6 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
 using Palantir;
-using Palantir.Apartment;
 using Palantir.Homatic.Extensions;
 using Palantir.Sys;
 using Proto;
@@ -10,9 +9,11 @@ using Proto.Cluster.Consul;
 using Proto.Cluster.Partition;
 using Proto.Cluster.PubSub;
 using Proto.DependencyInjection;
+using Proto.OpenTelemetry;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
 using Serilog;
+using StackExchange.Redis;
 
 Proto.Log.SetLoggerFactory(
     LoggerFactory.Create(l => l
@@ -41,7 +42,9 @@ builder.Services.AddSingleton(p =>
         .WithDeadLetterRequestLogging(true)
         .WithDeveloperThreadPoolStatsLogging(true);
 
-    var kvStore = new InMemoryKeyValueStore();
+    var multiplexer = ConnectionMultiplexer.Connect("localhost:6379");
+    var db = multiplexer.GetDatabase();
+    var kvStore = new RedisKeyValueStore(db, 50);
 
     var remoteConfig = GrpcNetRemoteConfig
             .BindToLocalhost()
@@ -52,6 +55,12 @@ builder.Services.AddSingleton(p =>
     var clusterName = "palantir";
     var clusterProvider = new ConsulProvider(new ConsulProviderConfig());
 
+    var apartmentProps = Props.FromProducer(()
+        => new ApartmentGrainActor(
+            (cluster, clusterIdentity) => ActivatorUtilities.CreateInstance<Apartment>(p, cluster, clusterIdentity)
+            )
+        ).WithTracing();
+
     var actorSystem = new ActorSystem(actorSystemConfig);
 
     actorSystem
@@ -61,6 +70,7 @@ builder.Services.AddSingleton(p =>
                 .Setup(clusterName, clusterProvider, new PartitionIdentityLookup())
                 // explicit topic actor registration is needed to provide a key value store implementation
                 .WithClusterKind(TopicActor.Kind, Props.FromProducer(() => new TopicActor(kvStore)))
+                .WithClusterKind(ApartmentGrainActor.Kind, apartmentProps)
             )
             .Cluster()
             .WithPidCacheInvalidation();
@@ -69,8 +79,6 @@ builder.Services.AddSingleton(p =>
 });
 
 builder.Services.AddSingleton(provider => provider.GetRequiredService<ActorSystem>().Cluster());
-
-builder.Services.AddTransient<RootActor>();
 
 builder.Services.AddHomatic(builder.Configuration.GetValue<string>("Homatic:Url")!);
 

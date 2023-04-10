@@ -2,12 +2,20 @@ syntax = "proto3";
 
 option csharp_namespace = "Palantir";
 
-message Join {
+message JoinRoom {
 	string device_id = 1;
 	string channel_id = 2;
 	string room = 3;
 }
 
-message Joined {
+message RoomJoined {
 	bytes pid_bytes = 1;
+}
+
+message GetStateRequest{
+	string source = 1;
+}
+
+message GetStateResponse{
+	repeated string devices = 1;
 }
