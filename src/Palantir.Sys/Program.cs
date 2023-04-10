@@ -6,9 +6,9 @@ using Palantir.Sys;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Cache;
+using Proto.Cluster.Consul;
 using Proto.Cluster.Partition;
 using Proto.Cluster.PubSub;
-using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
@@ -50,7 +50,7 @@ builder.Services.AddSingleton(p =>
             .WithRemoteDiagnostics(true);
 
     var clusterName = "palantir";
-    var clusterProvider = new TestProvider(new TestProviderOptions(), new InMemAgent());
+    var clusterProvider = new ConsulProvider(new ConsulProviderConfig());
 
     var actorSystem = new ActorSystem(actorSystemConfig);
 
