@@ -18,3 +18,8 @@ message GetStateRequest{
 message GetStateResponse{
 	repeated string devices = 1;
 }
+
+message ValueChanged{
+	string type = 1;
+	string value = 2;
+}
