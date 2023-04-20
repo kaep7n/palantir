@@ -55,7 +55,7 @@ public class HomaticDeviceActor : IActor
 
             context.Forward(channel);
         }
-        if (context.Message is Join)
+        if (context.Message is JoinRoom)
         {
             context.Forward(context.Parent);
         }

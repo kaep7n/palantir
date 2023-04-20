@@ -7,7 +7,6 @@ namespace Palantir.Homatic.Actors;
 
 public class HomaticActor : IActor
 {
-    private readonly PID root;
     private readonly HomaticHttpClient homaticClient;
     private readonly ILogger<HomaticActor> logger;
 
@@ -15,9 +14,8 @@ public class HomaticActor : IActor
 
     private PID? mqtt;
 
-    public HomaticActor(PID root, HomaticHttpClient homaticClient, ILogger<HomaticActor> logger)
+    public HomaticActor(HomaticHttpClient homaticClient, ILogger<HomaticActor> logger)
     {
-        this.root = root ?? throw new ArgumentNullException(nameof(root));
         this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -50,10 +48,6 @@ public class HomaticActor : IActor
             {
                 this.logger.LogError(exception, "HomaticActor");
             }
-        }
-        if (context.Message is Join)
-        {
-            context.Forward(this.root);
         }
         if (context.Message is ParameterValueChanged pvc)
         {

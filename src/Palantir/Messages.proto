@@ -9,7 +9,6 @@ message JoinRoom {
 }
 
 message RoomJoined {
-	bytes pid_bytes = 1;
 }
 
 message GetStateRequest{

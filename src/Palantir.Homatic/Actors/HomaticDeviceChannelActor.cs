@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Palantir.Homatic.Http;
 using Proto;
+using Proto.Cluster;
 using Proto.DependencyInjection;
 
 namespace Palantir.Homatic.Actors;
@@ -13,8 +14,6 @@ public class HomaticDeviceChannelActor : IActor
     private readonly ILogger<HomaticDeviceChannelActor> logger;
 
     private readonly Dictionary<string, PID> parameters = new Dictionary<string, PID>();
-
-    private List<PID> rooms = new();
 
     public HomaticDeviceChannelActor(
         string deviceId,
@@ -38,14 +37,16 @@ public class HomaticDeviceChannelActor : IActor
 
                 var channel = await this.homaticClient.GetChannelAsync(this.deviceId, this.id);
 
-                var rooms = channel.Links.Where(l => l.Rel == "room");
+                var homaticRooms = channel.Links.Where(l => l.Rel == "room");
 
-                foreach (var room in rooms)
+                foreach (var homaticRoom in homaticRooms)
                 {
-                    var joinRoom = new Join(this.deviceId, this.id, room.Href.Replace("/room/", string.Empty));
-                    var roomJoined = await context.RequestAsync<Joined>(context.Parent, joinRoom, TimeSpan.FromSeconds(3));
+                    var homaticRoomId = homaticRoom.Href.Replace("/room/", string.Empty);
 
-                    this.rooms.Add(roomJoined.Pid);
+                    var room = context.Cluster().GetRoomGrain(Rooms.GetClusterIdentity(homaticRoomId));
+
+                    var joinRoom = new JoinRoom(this.deviceId, this.id, homaticRoom.Href.Replace("/room/", string.Empty));
+                    var roomJoined = await room.Join(joinRoom, CancellationToken.None);
                 }
 
                 foreach (var link in channel.Links)
@@ -53,7 +54,7 @@ public class HomaticDeviceChannelActor : IActor
                     if (link.Href == ".." || link.Rel != "parameter")
                         continue;
 
-                    var props = context.System.DI().PropsFor<HomaticDeviceChannelParameterActor>(this.deviceId, this.id, link.Href, this.rooms);
+                    var props = context.System.DI().PropsFor<HomaticDeviceChannelParameterActor>(this.deviceId, this.id, link.Href);
                     var pid = context.Spawn(props);
 
                     this.parameters.Add(link.Href, pid);

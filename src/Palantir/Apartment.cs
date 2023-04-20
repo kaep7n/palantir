@@ -17,8 +17,6 @@ public class Apartment : ApartmentGrainBase
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    private Guid Id { get; } = Guid.NewGuid();
-
     public override Task OnStarted()
     {
         return base.OnStarted();
@@ -31,7 +29,7 @@ public class Apartment : ApartmentGrainBase
 
     public override Task<GetStateResponse> GetState(GetStateRequest request)
     {
-        this.logger.LogInformation("{id}: Getting State for {source}", this.Id, request.Source);
+        this.logger.LogInformation("{id}: Getting State for {source}", this.clusterIdentity, request.Source);
         return Task.FromResult(new GetStateResponse());
     }
 }

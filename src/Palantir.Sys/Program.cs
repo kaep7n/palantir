@@ -61,6 +61,12 @@ builder.Services.AddSingleton(p =>
             )
         ).WithTracing();
 
+    var roomProps = Props.FromProducer(()
+    => new RoomGrainActor(
+        (cluster, clusterIdentity) => ActivatorUtilities.CreateInstance<Room>(p, cluster, clusterIdentity)
+        )
+    ).WithTracing();
+
     var actorSystem = new ActorSystem(actorSystemConfig);
 
     actorSystem
@@ -71,6 +77,7 @@ builder.Services.AddSingleton(p =>
                 // explicit topic actor registration is needed to provide a key value store implementation
                 .WithClusterKind(TopicActor.Kind, Props.FromProducer(() => new TopicActor(kvStore)))
                 .WithClusterKind(ApartmentGrainActor.Kind, apartmentProps)
+                .WithClusterKind(RoomGrainActor.Kind, roomProps)
             )
             .Cluster()
             .WithPidCacheInvalidation();

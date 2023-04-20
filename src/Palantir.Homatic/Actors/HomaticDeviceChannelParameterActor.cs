@@ -9,7 +9,6 @@ public class HomaticDeviceChannelParameterActor : IActor
     private readonly string deviceId;
     private readonly string channelId;
     private readonly string id;
-    private readonly List<PID> rooms;
     private readonly HomaticHttpClient homaticClient;
     private readonly ILogger<HomaticDeviceChannelParameterActor> logger;
     private Parameter parameter;
@@ -19,14 +18,12 @@ public class HomaticDeviceChannelParameterActor : IActor
         string deviceId,
         string channelId,
         string id,
-        List<PID> rooms,
         HomaticHttpClient homaticClient,
         ILogger<HomaticDeviceChannelParameterActor> logger)
     {
         this.deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
         this.channelId = channelId ?? throw new ArgumentNullException(nameof(channelId));
         this.id = id ?? throw new ArgumentNullException(nameof(id));
-        this.rooms = rooms ?? throw new ArgumentNullException(nameof(rooms));
         this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -60,12 +57,6 @@ public class HomaticDeviceChannelParameterActor : IActor
                 );
 
                 this.currentValue = pvc.Value;
-
-                var valueChanged = new ValueChanged($"{this.deviceId}/{this.channelId}/{this.id}", this.currentValue);
-                foreach (var room in this.rooms)
-                {
-                    context.Send(room, valueChanged);
-                }
             }
         }
         if (context.Message is Stopped)

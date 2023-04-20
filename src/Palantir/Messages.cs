@@ -1,7 +1,4 @@
-﻿using Google.Protobuf;
-using Proto;
-
-namespace Palantir;
+﻿namespace Palantir;
 
 public partial class JoinRoom
 {
@@ -15,10 +12,5 @@ public partial class JoinRoom
 
 public partial class RoomJoined
 {
-    public RoomJoined(PID pid)
-    {
-        this.PidBytes = pid.ToByteString();
-    }
 
-    public PID Pid => PID.Parser.ParseFrom(this.PidBytes);
 }

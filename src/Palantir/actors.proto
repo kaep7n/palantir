@@ -9,3 +9,7 @@ import "messages.proto";
 service ApartmentGrain {
   rpc GetState(GetStateRequest) returns (GetStateResponse);
 }
+
+service RoomGrain{
+	rpc Join(JoinRoom) returns (RoomJoined);
+}
