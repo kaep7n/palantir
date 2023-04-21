@@ -91,6 +91,13 @@ builder.Services.AddHomatic(builder.Configuration.GetValue<string>("Homatic:Url"
 
 builder.Services.AddHostedService<ActorSystemService>();
 
+var roomsSection = builder.Configuration.GetSection("Rooms");
+
+foreach (var children in roomsSection.GetChildren())
+{
+    builder.Services.Configure<RoomConfig>(children.Key, children);
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
