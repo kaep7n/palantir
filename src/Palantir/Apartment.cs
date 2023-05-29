@@ -10,26 +10,31 @@ public class Apartment : ApartmentGrainBase
     private readonly ClusterIdentity clusterIdentity;
     private ILogger<Apartment> logger;
 
-    public Apartment(IContext context, ClusterIdentity clusterIdentity, ILogger<Apartment> logger) : base(context)
+    private readonly List<RoomGrainClient> rooms = new List<RoomGrainClient>();
+
+    public Apartment(
+        IContext context,
+        ClusterIdentity clusterIdentity,
+        ILogger<Apartment> logger) : base(context)
     {
         this.context = context ?? throw new ArgumentNullException(nameof(context));
         this.clusterIdentity = clusterIdentity ?? throw new ArgumentNullException(nameof(clusterIdentity));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public override Task OnStarted()
+    public override async Task<ApartmentInitialized> Initialize(InitializeApartment request)
     {
-        return base.OnStarted();
+        foreach (var roomDefinition in request.Definition.Rooms)
+        {
+            var room = this.context.Cluster().GetRoomGrain(roomDefinition.Name);
+
+            await room.Initialize(new IntializeRoom { Definition = roomDefinition }, this.context.CancellationToken)
+                .ConfigureAwait(false);
+
+            this.rooms.Add(room);
+        }
+
+        return new ApartmentInitialized();
     }
 
-    public override Task OnReceive()
-    {
-        return base.OnReceive();
-    }
-
-    public override Task<GetStateResponse> GetState(GetStateRequest request)
-    {
-        this.logger.LogInformation("{id}: Getting State for {source}", this.clusterIdentity, request.Source);
-        return Task.FromResult(new GetStateResponse());
-    }
 }

@@ -7,9 +7,10 @@ import "google/protobuf/empty.proto";
 import "messages.proto";
 
 service ApartmentGrain {
-  rpc GetState(GetStateRequest) returns (GetStateResponse);
+	rpc Initialize(InitializeApartment) returns (ApartmentInitialized);
 }
 
 service RoomGrain{
+	rpc Initialize(IntializeRoom) returns (RoomInitialzed);
 	rpc Join(JoinRoom) returns (RoomJoined);
 }

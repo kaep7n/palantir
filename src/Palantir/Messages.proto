@@ -2,6 +2,34 @@ syntax = "proto3";
 
 option csharp_namespace = "Palantir";
 
+message InitializeApartment {
+	ApartmentDefinition definition = 1;
+}
+
+message ApartmentDefinition {
+	repeated RoomDefinition rooms = 1;
+}
+
+message RoomDefinition {
+	string name = 1;
+	repeated DeviceDefinition devices = 2;
+}
+
+message ApartmentInitialized{
+}
+
+message IntializeRoom {
+	RoomDefinition definition = 1;
+}
+
+message DeviceDefinition {
+	string type = 1;
+	string name = 2;
+}
+
+message RoomInitialzed {
+}
+
 message JoinRoom {
 	string device_id = 1;
 	string channel_id = 2;

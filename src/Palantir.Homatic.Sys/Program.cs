@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Palantir;
+using Palantir.Homatic.Extensions;
 using Palantir.Sys;
 using Proto;
 using Proto.Cluster;
@@ -8,7 +9,6 @@ using Proto.Cluster.Consul;
 using Proto.Cluster.Partition;
 using Proto.Cluster.PubSub;
 using Proto.DependencyInjection;
-using Proto.OpenTelemetry;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
 using Serilog;
@@ -21,10 +21,8 @@ Proto.Log.SetLoggerFactory(
         )
     );
 
-var builder = Host.CreateDefaultBuilder(args);
-
 var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((context, services) =>
+    .ConfigureServices(services =>
     {
         services.AddSingleton(p =>
         {
@@ -52,18 +50,6 @@ var host = Host.CreateDefaultBuilder(args)
 
             var actorSystem = new ActorSystem(actorSystemConfig);
 
-            var apartmentProps = Props.FromProducer(()
-                => new ApartmentGrainActor(
-                    (cluster, clusterIdentity) => ActivatorUtilities.CreateInstance<Apartment>(p, cluster, clusterIdentity)
-                    )
-            ).WithTracing();
-
-            var roomProps = Props.FromProducer(()
-            => new RoomGrainActor(
-                (cluster, clusterIdentity) => ActivatorUtilities.CreateInstance<Room>(p, cluster, clusterIdentity)
-                )
-            ).WithTracing();
-
             actorSystem
                     .WithServiceProvider(p)
                     .WithRemote(remoteConfig)
@@ -71,8 +57,6 @@ var host = Host.CreateDefaultBuilder(args)
                         .Setup(clusterName, clusterProvider, new PartitionIdentityLookup())
                         // explicit topic actor registration is needed to provide a key value store implementation
                         .WithClusterKind(TopicActor.Kind, Props.FromProducer(() => new TopicActor(kvStore)))
-                        .WithClusterKind(ApartmentGrainActor.Kind, apartmentProps)
-                        .WithClusterKind(RoomGrainActor.Kind, roomProps)
                     )
                     .Cluster()
                     .WithPidCacheInvalidation();
@@ -81,7 +65,7 @@ var host = Host.CreateDefaultBuilder(args)
         });
 
         services.AddHostedService<ActorSystemService>();
-        services.Configure<ApartmentOption>(context.Configuration.GetSection("Apartment"));
+        services.AddHomatic("http://192.168.2.101:2121/");
     })
     .UseSerilog((context, configuration)
         => configuration.ReadFrom.Configuration(context.Configuration.GetSection("Logging"))

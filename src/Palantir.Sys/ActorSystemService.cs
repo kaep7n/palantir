@@ -1,18 +1,22 @@
-﻿using Palantir.Homatic.Actors;
+﻿using Microsoft.Extensions.Options;
 using Proto;
 using Proto.Cluster;
-using Proto.DependencyInjection;
 
 namespace Palantir.Sys;
 
 public class ActorSystemService : IHostedService
 {
     private readonly ActorSystem actorSystem;
+    private readonly IOptionsMonitor<ApartmentOption> optionsMonitor;
     private readonly ILogger<ActorSystemService> logger;
 
-    public ActorSystemService(ActorSystem actorSystem, ILogger<ActorSystemService> logger)
+    public ActorSystemService(
+        ActorSystem actorSystem,
+        IOptionsMonitor<ApartmentOption> optionsMonitor,
+        ILogger<ActorSystemService> logger)
     {
         this.actorSystem = actorSystem ?? throw new ArgumentNullException(nameof(actorSystem));
+        this.optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -23,11 +27,26 @@ public class ActorSystemService : IHostedService
 
         var apartment = this.actorSystem.Cluster().GetApartmentGrain("Apartment");
 
-        var state = await apartment.GetState(new GetStateRequest() { Source = $"Sys_{Guid.NewGuid()}" }, cancellationToken);
+        var definition = new ApartmentDefinition();
 
-        var homaticProps = this.actorSystem.DI().PropsFor<HomaticActor>();
-        this.actorSystem.Root.Spawn(homaticProps);
-        this.logger.LogInformation("spawned {type}", typeof(HomaticActor));
+        foreach (var room in this.optionsMonitor.CurrentValue.Rooms)
+        {
+            var roomDefinition = new RoomDefinition()
+            {
+                Name = room.Name
+            };
+
+            foreach (var device in room.Devices)
+            {
+                var deviceDefinition = new DeviceDefinition { Type = device.Type, Name = device.Name };
+
+                roomDefinition.Devices.Add(deviceDefinition);
+            }
+
+            definition.Rooms.Add(roomDefinition);
+        }
+
+        _ = await apartment.Initialize(new InitializeApartment { Definition = definition }, cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

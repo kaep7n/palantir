@@ -1,7 +1,9 @@
-﻿using Proto;
+﻿using Palantir.Homatic.Actors;
+using Proto;
 using Proto.Cluster;
+using Proto.DependencyInjection;
 
-namespace Palantir.Api;
+namespace Palantir.Sys;
 
 public class ActorSystemService : IHostedService
 {
@@ -18,6 +20,10 @@ public class ActorSystemService : IHostedService
     {
         await this.actorSystem.Cluster()
              .StartMemberAsync();
+
+        var homaticProps = this.actorSystem.DI().PropsFor<HomaticActor>();
+        this.actorSystem.Root.Spawn(homaticProps);
+        this.logger.LogInformation("spawned {type}", typeof(HomaticActor));
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

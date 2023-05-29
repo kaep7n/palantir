@@ -1,11 +1,14 @@
 {
   "profiles": {
-    "Palantir.Sys": {
+    "Palantir.Homatic.Sys": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "dev"
       },
       "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker"
     }
   }
 }

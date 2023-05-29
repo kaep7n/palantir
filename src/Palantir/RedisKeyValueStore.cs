@@ -3,7 +3,7 @@ using Proto.Cluster.PubSub;
 using Proto.Utils;
 using StackExchange.Redis;
 
-namespace Palantir.Sys;
+namespace Palantir;
 
 public class RedisKeyValueStore : ConcurrentKeyValueStore<Subscribers>
 {

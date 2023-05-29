@@ -1,18 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>67da3945-fb5c-4922-8108-e59af41b3b22</UserSecretsId>
+    <UserSecretsId>dotnet-Palantir.Homatic.Sys-1d7da49e-e311-4219-9fad-6333f36e1be8</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	<LangVersion>preview</LangVersion>
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
-	<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
 	<PackageReference Include="Proto.Actor" Version="1.1.0" />
 	<PackageReference Include="Proto.Cluster" Version="1.1.0" />
@@ -26,11 +25,10 @@
 	<PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
 	<PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
 	<PackageReference Include="StackExchange.Redis" Version="2.6.48" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Palantir.Homatic\Palantir.Homatic.csproj" />
     <ProjectReference Include="..\Palantir\Palantir.csproj" />
   </ItemGroup>
-
 </Project>
