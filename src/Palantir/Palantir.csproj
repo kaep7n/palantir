@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProtoGrain Include="actors.proto" AdditionalImportDirs="." />
-	<Protobuf Include="messages.proto" AdditionalImportDirs="." />
+	<ProtoGrain Include="_actors.proto" AdditionalImportDirs="." />
+	<Protobuf Include="_messages.proto" AdditionalImportDirs="." />
   </ItemGroup>
 	
 </Project>
