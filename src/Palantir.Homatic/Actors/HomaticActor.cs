@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Palantir.Homatic.Http;
 using Proto;
 using Proto.DependencyInjection;
 
@@ -7,16 +6,15 @@ namespace Palantir.Homatic.Actors;
 
 public class HomaticActor : IActor
 {
-    private readonly HomaticHttpClient homaticClient;
     private readonly ILogger<HomaticActor> logger;
 
     private readonly Dictionary<string, PID> devices = new();
 
     private PID? mqtt;
+    private PID http;
 
-    public HomaticActor(HomaticHttpClient homaticClient, ILogger<HomaticActor> logger)
+    public HomaticActor(ILogger<HomaticActor> logger)
     {
-        this.homaticClient = homaticClient ?? throw new ArgumentNullException(nameof(homaticClient));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -24,30 +22,40 @@ public class HomaticActor : IActor
     {
         if (context.Message is Started)
         {
-            try
-            {
-                this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
+            this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
+            //try
+            //{
 
-                var devices = await this.homaticClient.GetDevicesAsync();
 
-                foreach (var link in devices.Links)
-                {
-                    if (link.Href == "..")
-                        continue;
+            //    var devices = await this.homaticClient.GetDevicesAsync();
 
-                    var props = context.System.DI().PropsFor<HomaticDeviceActor>(link.Href);
-                    var pid = context.Spawn(props);
+            //    foreach (var link in devices.Links)
+            //    {
+            //        if (link.Href == "..")
+            //            continue;
 
-                    this.devices.Add(link.Href, pid);
-                }
+            //        var props = context.System.DI().PropsFor<HomaticDeviceActor>(link.Href);
+            //        var pid = context.Spawn(props);
 
-                var mqttProps = context.System.DI().PropsFor<HomaticMqttActor>();
-                this.mqtt = context.Spawn(mqttProps);
-            }
-            catch (Exception exception)
-            {
-                this.logger.LogError(exception, "HomaticActor");
-            }
+            //        this.devices.Add(link.Href, pid);
+            //    }
+
+            //    var mqttProps = context.System.DI().PropsFor<HomaticMqttActor>();
+            //    this.mqtt = context.Spawn(mqttProps);
+            //}
+            //catch (Exception exception)
+            //{
+            //    this.logger.LogError(exception, "HomaticActor");
+            //}
+
+            var httpProps = context.System.DI().PropsFor<HttpReceiverArctor>();
+            this.http = context.Spawn(httpProps);
+
+            context.Request(this.http, new HttpRequest(new Uri("http://192.168.2.101:2121/device"), typeof(Devices)), context.Self);
+        }
+        if (context.Message is HttpResponse response)
+        {
+
         }
         if (context.Message is ParameterValueChanged pvc)
         {

@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<HomaticDeviceActor>();
         services.AddTransient<HomaticDeviceChannelActor>();
         services.AddTransient<HomaticDeviceChannelParameterActor>();
+        services.AddTransient<HttpReceiverArctor>();
 
         services.AddHttpClient<HomaticHttpClient>((p, c) =>
         {
