@@ -21,9 +21,9 @@ public class ActorSystemService : IHostedService
         await this.actorSystem.Cluster()
              .StartMemberAsync();
 
-        var homaticProps = this.actorSystem.DI().PropsFor<HomaticActor>();
+        var homaticProps = this.actorSystem.DI().PropsFor<RootActor>();
         this.actorSystem.Root.Spawn(homaticProps);
-        this.logger.LogInformation("spawned {type}", typeof(HomaticActor));
+        this.logger.LogInformation("spawned {type}", typeof(RootActor));
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

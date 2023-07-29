@@ -10,12 +10,12 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(url);
 
-        services.AddTransient<HomaticActor>();
-        services.AddTransient<HomaticMqttActor>();
-        services.AddTransient<HomaticDeviceActor>();
-        services.AddTransient<HomaticDeviceChannelActor>();
-        services.AddTransient<HomaticDeviceChannelParameterActor>();
-        services.AddTransient<HttpReceiverArctor>();
+        services.AddTransient<RootActor>();
+        services.AddTransient<MqttActor>();
+        services.AddTransient<DeviceActor>();
+        services.AddTransient<ChannelActor>();
+        services.AddTransient<ParameterActor>();
+        services.AddTransient<ApiActor>();
 
         services.AddHttpClient<HomaticHttpClient>((p, c) =>
         {

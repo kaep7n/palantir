@@ -7,13 +7,13 @@ using System.Text.Json;
 
 namespace Palantir.Homatic.Actors;
 
-public class HomaticMqttActor : IActor
+public class MqttActor : IActor
 {
-    private readonly ILogger<HomaticMqttActor> logger;
+    private readonly ILogger<MqttActor> logger;
     private ActorSystem system;
     private PID? parent;
 
-    public HomaticMqttActor(ILogger<HomaticMqttActor> logger)
+    public MqttActor(ILogger<MqttActor> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
