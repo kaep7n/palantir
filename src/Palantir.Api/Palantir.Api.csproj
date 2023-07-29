@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>67da3945-fb5c-4922-8108-e59af41b3b22</UserSecretsId>
@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
-	<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.6.23329.11" />
+	<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.6.23329.7" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
 	<PackageReference Include="Proto.Actor" Version="1.3.0" />
 	<PackageReference Include="Proto.Cluster" Version="1.3.0" />

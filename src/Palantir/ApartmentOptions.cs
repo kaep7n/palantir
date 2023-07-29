@@ -1,5 +1,6 @@
 ﻿namespace Palantir;
-public class ApartmentOption
+
+public class ApartmentOptions
 {
     public List<RoomOptions> Rooms { get; set; } = new();
 }

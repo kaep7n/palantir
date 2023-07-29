@@ -7,12 +7,12 @@ namespace Palantir.Sys;
 public class ActorSystemService : IHostedService
 {
     private readonly ActorSystem actorSystem;
-    private readonly IOptionsMonitor<ApartmentOption> optionsMonitor;
+    private readonly IOptionsMonitor<ApartmentOptions> optionsMonitor;
     private readonly ILogger<ActorSystemService> logger;
 
     public ActorSystemService(
         ActorSystem actorSystem,
-        IOptionsMonitor<ApartmentOption> optionsMonitor,
+        IOptionsMonitor<ApartmentOptions> optionsMonitor,
         ILogger<ActorSystemService> logger)
     {
         this.actorSystem = actorSystem ?? throw new ArgumentNullException(nameof(actorSystem));

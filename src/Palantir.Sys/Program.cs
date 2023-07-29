@@ -81,7 +81,7 @@ var host = Host.CreateDefaultBuilder(args)
         });
 
         services.AddHostedService<ActorSystemService>();
-        services.Configure<ApartmentOption>(context.Configuration.GetSection("Apartment"));
+        services.Configure<ApartmentOptions>(context.Configuration.GetSection("Apartment"));
     })
     .UseSerilog((context, configuration)
         => configuration.ReadFrom.Configuration(context.Configuration.GetSection("Logging"))

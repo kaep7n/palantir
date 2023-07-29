@@ -32,8 +32,9 @@ public class Room : RoomGrainBase
                 "Shutter" => new Shutter { Name = deviceConfig.Name },
                 "Dimmer" => new Dimmer { Name = deviceConfig.Name },
                 "Switch" => new Switch { Name = deviceConfig.Name },
+                "Lock" => new Lock { Name = deviceConfig.Name },
                 "Thermostat" => new Thermostat { Name = deviceConfig.Name } as Device,
-                _ => throw new ArgumentOutOfRangeException(nameof(request), "Unexpected device type")
+                _ => throw new ArgumentOutOfRangeException(nameof(request), $"Unexpected device type '{deviceConfig.Type}'")
             };
 
             this.devices.Add(device);
