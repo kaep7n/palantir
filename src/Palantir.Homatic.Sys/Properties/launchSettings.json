@@ -6,9 +6,6 @@
         "DOTNET_ENVIRONMENT": "dev"
       },
       "dotnetRunMessages": true
-    },
-    "Docker": {
-      "commandName": "Docker"
     }
   }
 }
