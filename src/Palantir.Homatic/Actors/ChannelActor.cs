@@ -4,74 +4,68 @@ using Proto.DependencyInjection;
 
 namespace Palantir.Homatic.Actors;
 
-public class ChannelActor : IActor
+public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) : BaseActor(apiPool, id, logger)
 {
-    private readonly PID apiPool;
-    private readonly string deviceId;
-    private readonly string id;
-    private readonly ILogger<ChannelActor> logger;
-
     private readonly Dictionary<string, PID> parameters = new();
 
-    public ChannelActor(
-        PID apiPool,
-        string deviceId,
-        string id,
-        ILogger<ChannelActor> logger)
+    public override Task ReceiveAsync(IContext context)
     {
-        this.apiPool = apiPool ?? throw new ArgumentNullException(nameof(apiPool));
-        this.deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
-        this.id = id ?? throw new ArgumentNullException(nameof(id));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        base.ReceiveAsync(context);
+
+        return context.Message switch
+        {
+            GetChannelResult msg => this.OnGetChannelResult(context, msg),
+            ParameterValueChanged msg => this.OnParameterValueChanged(context, msg),
+            _ => Task.CompletedTask
+        };
     }
 
-    public async Task ReceiveAsync(IContext context)
+    protected override Task OnStarted(IContext context)
     {
-        if (context.Message is Started)
+        context.Request(this.apiPool, new GetChannel(this.id), context.Self);
+
+        return base.OnStarted(context);
+    }
+
+    private Task OnGetChannelResult(IContext context, GetChannelResult result)
+    {
+        var homaticRooms = result.Channel.Links.Where(l => l.Rel == "room");
+
+        foreach (var homaticRoom in homaticRooms)
         {
-            this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
+            //var homaticRoomId = homaticRoom.Href.Replace("/room/", string.Empty);
 
-            context.Request(this.apiPool, new GetChannel(this.deviceId, this.id), context.Self);
+            //var room = context.Cluster().GetRoomGrain(Rooms.GetClusterIdentity(homaticRoomId));
+
+            //var joinRoom = new JoinRoom(this.deviceId, this.id, homaticRoom.Href.Replace("/room/", string.Empty));
+            //var roomJoined = await room.Join(joinRoom, CancellationToken.None);
         }
-        else if (context.Message is GetChannelResult result)
+
+        foreach (var link in result.Channel.Links)
         {
-            var homaticRooms = result.Channel.Links.Where(l => l.Rel == "room");
+            if (link.Href == ".." || link.Rel != "parameter")
+                continue;
 
-            foreach (var homaticRoom in homaticRooms)
-            {
-                //var homaticRoomId = homaticRoom.Href.Replace("/room/", string.Empty);
+            var props = context.System.DI().PropsFor<ParameterActor>(this.apiPool, $"{this.id}/{link.Href}");
+            var pid = context.Spawn(props);
 
-                //var room = context.Cluster().GetRoomGrain(Rooms.GetClusterIdentity(homaticRoomId));
-
-                //var joinRoom = new JoinRoom(this.deviceId, this.id, homaticRoom.Href.Replace("/room/", string.Empty));
-                //var roomJoined = await room.Join(joinRoom, CancellationToken.None);
-            }
-
-            foreach (var link in result.Channel.Links)
-            {
-                if (link.Href == ".." || link.Rel != "parameter")
-                    continue;
-
-                var props = context.System.DI().PropsFor<ParameterActor>(this.apiPool, this.deviceId, this.id, link.Href);
-                var pid = context.Spawn(props);
-
-                this.parameters.Add(link.Href, pid);
-            }
+            this.parameters.Add(link.Href, pid);
         }
-        else if (context.Message is ParameterValueChanged pvc)
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnParameterValueChanged(IContext context, ParameterValueChanged pvc)
+    {
+        if (this.parameters.TryGetValue(pvc.Parameter, out var parameter))
         {
-            if (this.parameters.TryGetValue(pvc.Parameter, out var parameter))
-            {
-                context.Forward(parameter);
-            }
-            else
-            {
-                this.logger.LogWarning("could not find parameter '{parameter}' on channel '{channel}' on device '{device}'", pvc.Parameter, this.id, this.deviceId);
-            }
+            context.Forward(parameter);
         }
-        else if (context.Message is Stopped)
+        else
         {
-            this.logger.LogDebug("{type} ({pid}) has stopped", this.GetType(), context.Self);
+            this.logger.LogWarning("could not find parameter '{parameter}' on channel '{channel}'", pvc.Parameter, this.id);
         }
+
+        return Task.CompletedTask;
     }
 }

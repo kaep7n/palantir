@@ -7,17 +7,12 @@ using System.Text.Json;
 
 namespace Palantir.Homatic.Actors;
 
-public class MqttActor : IActor
+public class MqttActor(ILogger<MqttActor> logger) : IActor
 {
-    private readonly ILogger<MqttActor> logger;
+    private readonly ILogger<MqttActor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private ActorSystem system;
     private PID? parent;
     private IManagedMqttClient mqttClient;
-
-    public MqttActor(ILogger<MqttActor> logger)
-    {
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
 
     public Task ReceiveAsync(IContext context)
         => context.Message switch

@@ -3,61 +3,34 @@ using Proto;
 
 namespace Palantir.Homatic.Actors;
 
-public class ParameterActor : IActor
+public class ParameterActor(PID apiPool, string id, ILogger<ParameterActor> logger) : BaseActor(apiPool, id, logger)
 {
-    private readonly PID apiPool;
-    private readonly string deviceId;
-    private readonly string channelId;
-    private readonly string id;
+    private object? currentValue;
 
-    private readonly ILogger<ParameterActor> logger;
-
-    private Parameter parameter;
-    private object currentValue;
-
-    public ParameterActor(
-        PID apiPool,
-        string deviceId,
-        string channelId,
-        string id,
-        ILogger<ParameterActor> logger)
+    public override Task ReceiveAsync(IContext context)
     {
-        this.apiPool = apiPool ?? throw new ArgumentNullException(nameof(apiPool));
-        this.deviceId = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
-        this.channelId = channelId ?? throw new ArgumentNullException(nameof(channelId));
-        this.id = id ?? throw new ArgumentNullException(nameof(id));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        base.ReceiveAsync(context);
+
+        return context.Message switch
+        {
+            GetParameterResult => Task.CompletedTask,
+            ParameterValueChanged msg => this.OnParameterValueChanged(msg),
+            _ => Task.CompletedTask
+        };
     }
 
-    public Task ReceiveAsync(IContext context)
+    private Task OnParameterValueChanged(ParameterValueChanged pvc)
     {
-        if (context.Message is Started)
+        if (this.currentValue is null || !this.currentValue.Equals(pvc.Value))
         {
-            context.Request(this.apiPool, new GetParameter(this.deviceId, this.channelId, this.id), context.Self);
-        }
-        else if (context.Message is GetParameterResult result)
-        {
-            this.parameter = result.Parameter;
-        }
-        else if (context.Message is ParameterValueChanged pvc)
-        {
-            if (this.currentValue is null || !this.currentValue.Equals(pvc.Value))
-            {
-                this.logger.LogInformation(
-                    "{deviceId}/{channelId}/{parameter} value has changed from '{currentValue}' to '{newValue}'",
-                    this.deviceId,
-                    this.channelId,
-                    this.id,
-                    this.currentValue,
-                    pvc.Value
-                );
+            this.logger.LogInformation(
+                "{id} value has changed from '{currentValue}' to '{newValue}'",
+                this.id,
+                this.currentValue,
+                pvc.Value
+            );
 
-                this.currentValue = pvc.Value;
-            }
-        }
-        else if (context.Message is Stopped)
-        {
-            this.logger.LogDebug("{type} ({pid}) has stopped", this.GetType(), context.Self);
+            this.currentValue = pvc.Value;
         }
 
         return Task.CompletedTask;
