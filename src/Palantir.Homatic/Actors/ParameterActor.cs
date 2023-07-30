@@ -43,7 +43,7 @@ public class ParameterActor : IActor
         {
             if (this.currentValue is null || !this.currentValue.Equals(pvc.Value))
             {
-                this.logger.LogDebug(
+                this.logger.LogInformation(
                     "{deviceId}/{channelId}/{parameter} value has changed from '{currentValue}' to '{newValue}'",
                     this.deviceId,
                     this.channelId,

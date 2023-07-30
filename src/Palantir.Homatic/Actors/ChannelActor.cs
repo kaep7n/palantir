@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Proto;
-using Proto.Cluster;
-using Proto.Cluster.PubSub;
 using Proto.DependencyInjection;
 
 namespace Palantir.Homatic.Actors;
@@ -62,13 +60,14 @@ public class ChannelActor : IActor
         }
         else if (context.Message is ParameterValueChanged pvc)
         {
-            var parameter = this.parameters[pvc.Parameter];
-
-            context.Forward(parameter);
-
-            var publisher = context.Cluster().Publisher();
-
-            await publisher.Publish($"values/{pvc.Device}/{pvc.Channel}", new ValueChanged { Type = "test", Value = pvc.Value.ToString() });
+            if (this.parameters.TryGetValue(pvc.Parameter, out var parameter))
+            {
+                context.Forward(parameter);
+            }
+            else
+            {
+                this.logger.LogWarning("could not find parameter '{parameter}' on channel '{channel}' on device '{device}'", pvc.Parameter, this.id, this.deviceId);
+            }
         }
         else if (context.Message is Stopped)
         {

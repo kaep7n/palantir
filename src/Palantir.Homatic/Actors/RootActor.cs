@@ -13,7 +13,7 @@ public class RootActor : IActor
 
     private PID apiPool;
 
-    private PID? mqtt;
+    private PID mqtt;
 
     public RootActor(ILogger<RootActor> logger)
     {
@@ -26,8 +26,10 @@ public class RootActor : IActor
         {
             this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
 
-            //var mqttProps = context.System.DI().PropsFor<HomaticMqttActor>();
-            //this.mqtt = context.Spawn(mqttProps);
+            var mqttProps = context.System.DI().PropsFor<MqttActor>();
+            this.mqtt = context.Spawn(mqttProps);
+
+            context.Send(this.mqtt, new Connect());
 
             var apiProps = context.System.DI().PropsFor<ApiActor>();
             var apiPoolProps = context.NewRoundRobinPool(apiProps, 5);
@@ -55,8 +57,8 @@ public class RootActor : IActor
         }
         else if (context.Message is Stopped)
         {
+            context.Send(this.mqtt, new Disconnect());
             this.mqtt?.Stop(context.System);
-            this.mqtt = null;
 
             this.apiPool?.Stop(context.System);
 

@@ -12,29 +12,34 @@ public class MqttActor : IActor
     private readonly ILogger<MqttActor> logger;
     private ActorSystem system;
     private PID? parent;
+    private IManagedMqttClient mqttClient;
 
     public MqttActor(ILogger<MqttActor> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task ReceiveAsync(IContext context)
-    {
-        if (context.Message is Started)
+    public Task ReceiveAsync(IContext context)
+        => context.Message switch
         {
-            this.parent = context.Parent;
-            this.system = context.System;
-            this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
+            Started => this.OnStarted(context),
+            Connect => this.OnConnect(),
+            Disconnect => this.OnDisconnect(),
+            Stopped => this.OnStopped(context),
+            _ => this.OnUnexpectedMessage(context)
+        };
 
-            await this.StartMqtt();
-        }
-        if (context.Message is Stopped)
-        {
-            this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
-        }
+    private Task OnStarted(IContext context)
+    {
+        this.parent = context.Parent;
+        this.system = context.System;
+
+        this.logger.LogDebug("{type} ({pid}) has started", this.GetType(), context.Self);
+
+        return Task.CompletedTask;
     }
 
-    private async Task StartMqtt()
+    private async Task OnConnect()
     {
         var options = new ManagedMqttClientOptionsBuilder()
             .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
@@ -44,23 +49,44 @@ public class MqttActor : IActor
                 .Build())
             .Build();
 
-        var mqttClient = new MqttFactory().CreateManagedMqttClient();
-        await mqttClient.SubscribeAsync(new[]
+        this.mqttClient = new MqttFactory().CreateManagedMqttClient();
+        await this.mqttClient.SubscribeAsync(new[]
         {
             new MqttTopicFilterBuilder()
             .WithTopic("device/status/#")
             .Build()
         }).ConfigureAwait(false);
 
-        mqttClient.DisconnectedAsync += this.MqttClient_DisconnectedAsync;
-        mqttClient.ConnectedAsync += this.MqttClient_ConnectedAsync;
-        mqttClient.ApplicationMessageReceivedAsync += this.MqttClient_ApplicationMessageReceivedAsync;
+        this.mqttClient.DisconnectedAsync += this.MqttClient_DisconnectedAsync;
+        this.mqttClient.ConnectedAsync += this.MqttClient_ConnectedAsync;
+        this.mqttClient.ApplicationMessageReceivedAsync += this.MqttClient_ApplicationMessageReceivedAsync;
 
-        await mqttClient.StartAsync(options).ConfigureAwait(false);
+        await this.mqttClient.StartAsync(options).ConfigureAwait(false);
+    }
+
+    private async Task OnDisconnect()
+    {
+        await this.mqttClient.StopAsync();
+    }
+
+    private async Task OnStopped(IContext context)
+    {
+        await this.mqttClient.StopAsync();
+        this.logger.LogDebug("{type} ({pid}) has stopped", this.GetType(), context.Self);
+    }
+
+    private Task OnUnexpectedMessage(IContext context)
+    {
+        this.logger.LogInformation("received unexpected message {@msg}", context.Message);
+
+        return Task.CompletedTask;
     }
 
     private Task MqttClient_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
     {
+        if (this.parent is null)
+            throw new InvalidOperationException("No parent to send data to.");
+
         var topicPaths = arg.ApplicationMessage.Topic.Split("/");
 
         var device = topicPaths[2];
@@ -68,20 +94,20 @@ public class MqttActor : IActor
         var type = topicPaths[4];
 
         var dataString = arg.ApplicationMessage.ConvertPayloadToString();
-        var data = JsonSerializer.Deserialize<VeapMessage>(dataString);
+        var data = JsonSerializer.Deserialize<VeapMessage>(dataString)
+            ?? throw new InvalidOperationException($"could not deserialize {dataString} to {typeof(VeapMessage)}");
 
-        var deviceData = new ParameterValueChanged(device, channel, type,
-            DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp),
-            data.Value.ValueKind switch
-            {
-                JsonValueKind.Number => data.Value.GetDecimal(),
-                JsonValueKind.String => data.Value.GetString(),
-                JsonValueKind.False => data.Value.GetBoolean(),
-                JsonValueKind.True => data.Value.GetBoolean(),
-                _ => throw new ArgumentException($"Unexpected Value Kind {data.Value.ValueKind}")
-            },
-            data.Status
-        );
+        var timestamp = DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp);
+        var value = data.Value.ValueKind switch
+        {
+            JsonValueKind.Number => data.Value.GetDecimal(),
+            JsonValueKind.String => data.Value.GetString(),
+            JsonValueKind.False => data.Value.GetBoolean(),
+            JsonValueKind.True => (object)data.Value.GetBoolean(),
+            _ => throw new ArgumentException($"Unexpected Value Kind {data.Value.ValueKind}")
+        } ?? throw new InvalidOperationException($"unable to convert json value {data.Value} from type {data.Value.ValueKind}.");
+
+        var deviceData = new ParameterValueChanged(device, channel, type, timestamp, value, data.Status);
 
         this.system.Root.Send(this.parent, deviceData);
 
@@ -103,3 +129,6 @@ public class MqttActor : IActor
     }
 }
 
+public record Connect();
+
+public record Disconnect();
