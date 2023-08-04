@@ -2,12 +2,9 @@
 
 namespace Palantir.Homatic.Http;
 
-public class HomaticHttpClient
+public class HomaticHttpClient(HttpClient http)
 {
-    private readonly HttpClient http;
-
-    public HomaticHttpClient(HttpClient http)
-        => this.http = http ?? throw new ArgumentNullException(nameof(http));
+    private readonly HttpClient http = http ?? throw new ArgumentNullException(nameof(http));
 
     public async Task<Devices?> GetDevicesAsync()
         => await this.http.GetFromJsonAsync<Devices>("device")

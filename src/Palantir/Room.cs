@@ -5,59 +5,37 @@ using Proto.Cluster.PubSub;
 
 namespace Palantir;
 
-public class Room : RoomGrainBase
+public class Room(IContext context, ClusterIdentity clusterIdentity, ILogger<Room> logger) : RoomGrainBase(context)
 {
-    private readonly List<Device> devices = new List<Device>();
-    private readonly IContext context;
-    private readonly ClusterIdentity clusterIdentity;
-    private ILogger<Room> logger;
+    private readonly IContext context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly ClusterIdentity clusterIdentity = clusterIdentity ?? throw new ArgumentNullException(nameof(clusterIdentity));
+    private readonly ILogger<Room> logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-    public Room(
-        IContext context,
-        ClusterIdentity clusterIdentity,
-        ILogger<Room> logger
-        ) : base(context)
-    {
-        this.context = context ?? throw new ArgumentNullException(nameof(context));
-        this.clusterIdentity = clusterIdentity ?? throw new ArgumentNullException(nameof(clusterIdentity));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly Dictionary<string, PID> devices = new();
+
+    private RoomDefinition? roomDefinition;
 
     public override Task<RoomInitialzed> Initialize(IntializeRoom request)
     {
-        foreach (var deviceConfig in request.Definition.Devices)
-        {
-            var device = deviceConfig.Type switch
-            {
-                "Shutter" => new Shutter { Name = deviceConfig.Name },
-                "Dimmer" => new Dimmer { Name = deviceConfig.Name },
-                "Switch" => new Switch { Name = deviceConfig.Name },
-                "Lock" => new Lock { Name = deviceConfig.Name },
-                "Thermostat" => new Thermostat { Name = deviceConfig.Name } as Device,
-                _ => throw new ArgumentOutOfRangeException(nameof(request), $"Unexpected device type '{deviceConfig.Type}'")
-            };
-
-            this.devices.Add(device);
-        }
+        this.roomDefinition = request.Definition;
 
         return Task.FromResult(new RoomInitialzed());
     }
 
     public override Task<RoomJoined> Join(JoinRoom request)
     {
-        this.logger.LogInformation($"device {request.DeviceId} {request.ChannelId} joined Room {this.clusterIdentity}");
+        this.logger.LogInformation("{device} joined Room {room}", request.Id, this.roomDefinition?.Id);
 
-        this.Cluster.Subscribe($"values/{request.DeviceId}/{request.ChannelId}", context =>
+        this.devices.Add(request.Id, PID.FromAddress(request.Sender.Address, request.Sender.Id));
+
+        this.Cluster.Subscribe($"rooms/{this.roomDefinition!.Id}", context =>
         {
-            if (context.Message is ValueChanged vc)
-            {
-                this.logger.LogInformation($"{this.clusterIdentity}: value changed {vc}");
-            }
+            this.logger.LogInformation("{id}: value changed {@message}", this.clusterIdentity, context.Message);
 
             return Task.CompletedTask;
         });
 
-        return Task.FromResult(new RoomJoined());
+        return Task.FromResult(new RoomJoined { Definition = this.roomDefinition });
     }
 
 }

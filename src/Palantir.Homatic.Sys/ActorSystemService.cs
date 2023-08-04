@@ -5,16 +5,10 @@ using Proto.DependencyInjection;
 
 namespace Palantir.Sys;
 
-public class ActorSystemService : IHostedService
+public class ActorSystemService(ActorSystem actorSystem, ILogger<ActorSystemService> logger) : IHostedService
 {
-    private readonly ActorSystem actorSystem;
-    private readonly ILogger<ActorSystemService> logger;
-
-    public ActorSystemService(ActorSystem actorSystem, ILogger<ActorSystemService> logger)
-    {
-        this.actorSystem = actorSystem ?? throw new ArgumentNullException(nameof(actorSystem));
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly ActorSystem actorSystem = actorSystem ?? throw new ArgumentNullException(nameof(actorSystem));
+    private readonly ILogger<ActorSystemService> logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

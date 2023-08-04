@@ -2,5 +2,5 @@
 
 public class ApartmentOptions
 {
-    public List<RoomOptions> Rooms { get; set; } = new();
+    public IEnumerable<RoomOptions> Rooms { get; set; } = Enumerable.Empty<RoomOptions>();
 }

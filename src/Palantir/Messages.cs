@@ -1,12 +1,13 @@
-﻿namespace Palantir;
+﻿using Proto;
+
+namespace Palantir;
 
 public partial class JoinRoom
 {
-    public JoinRoom(string deviceId, string channelId, string room)
+    public JoinRoom(string id, PID sender)
     {
-        this.DeviceId = deviceId;
-        this.ChannelId = channelId;
-        this.Room = room;
+        this.Id = id;
+        this.Sender = new Sender { Address = sender.Address, Id = sender.Id };
     }
 }
 

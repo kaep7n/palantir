@@ -5,11 +5,9 @@ using StackExchange.Redis;
 
 namespace Palantir;
 
-public class RedisKeyValueStore : ConcurrentKeyValueStore<Subscribers>
+public class RedisKeyValueStore(IDatabase db, int maxConcurrency) : ConcurrentKeyValueStore<Subscribers>(new AsyncSemaphore(maxConcurrency))
 {
-    private readonly IDatabase db;
-
-    public RedisKeyValueStore(IDatabase db, int maxConcurrency) : base(new AsyncSemaphore(maxConcurrency)) => this.db = db;
+    private readonly IDatabase db = db;
 
     protected override async Task<Subscribers> InnerGetStateAsync(string id, CancellationToken ct)
     {

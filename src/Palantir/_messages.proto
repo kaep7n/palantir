@@ -11,8 +11,9 @@ message ApartmentDefinition {
 }
 
 message RoomDefinition {
-	string name = 1;
-	repeated DeviceDefinition devices = 2;
+	string id = 1;
+	string name = 2;
+	string type = 3;
 }
 
 message ApartmentInitialized{
@@ -22,32 +23,23 @@ message IntializeRoom {
 	RoomDefinition definition = 1;
 }
 
-message DeviceDefinition {
-	string type = 1;
-	string name = 2;
-}
-
 message RoomInitialzed {
 }
 
 message JoinRoom {
-	string device_id = 1;
-	string channel_id = 2;
-	string room = 3;
+	Sender sender = 1;
+	string id = 2;
 }
 
 message RoomJoined {
+	RoomDefinition definition = 1;
 }
 
-message GetStateRequest{
-	string source = 1;
+message Sender {
+	string address = 1;
+	string id = 2;
 }
 
-message GetStateResponse{
-	repeated string devices = 1;
-}
-
-message ValueChanged{
-	string type = 1;
-	string value = 2;
+message ValueChanged {
+	string value = 1;
 }

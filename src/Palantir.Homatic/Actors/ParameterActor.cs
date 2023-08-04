@@ -14,12 +14,12 @@ public class ParameterActor(PID apiPool, string id, ILogger<ParameterActor> logg
         return context.Message switch
         {
             GetParameterResult => Task.CompletedTask,
-            ParameterValueChanged msg => this.OnParameterValueChanged(msg),
+            ParameterValueChanged msg => this.OnParameterValueChanged(context, msg),
             _ => Task.CompletedTask
         };
     }
 
-    private Task OnParameterValueChanged(ParameterValueChanged pvc)
+    private Task OnParameterValueChanged(IContext context, ParameterValueChanged pvc)
     {
         if (this.currentValue is null || !this.currentValue.Equals(pvc.Value))
         {
