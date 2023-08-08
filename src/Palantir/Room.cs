@@ -15,6 +15,8 @@ public class Room(IContext context, ClusterIdentity clusterIdentity, ILogger<Roo
 
     private RoomDefinition? roomDefinition;
 
+    private double currentTemperature;
+
     public override Task<RoomInitialzed> Initialize(IntializeRoom request)
     {
         this.roomDefinition = request.Definition;
@@ -38,4 +40,12 @@ public class Room(IContext context, ClusterIdentity clusterIdentity, ILogger<Roo
         return Task.FromResult(new RoomJoined { Definition = this.roomDefinition });
     }
 
+    public override Task OnTemperatureChanged(TemperatureChanged request)
+    {
+        currentTemperature = request.Value;
+
+        this.logger.LogWarning("Temperature changed {@request}", request);
+
+        return Task.CompletedTask;
+    }
 }

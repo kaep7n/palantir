@@ -13,4 +13,5 @@ service ApartmentGrain {
 service RoomGrain{
 	rpc Initialize(IntializeRoom) returns (RoomInitialzed);
 	rpc Join(JoinRoom) returns (RoomJoined);
+	rpc OnTemperatureChanged(TemperatureChanged) returns (empty);
 }

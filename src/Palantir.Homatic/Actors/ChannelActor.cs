@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Proto;
 using Proto.Cluster;
-using Proto.Cluster.PubSub;
 using Proto.DependencyInjection;
 
 namespace Palantir.Homatic.Actors;
@@ -20,8 +19,26 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
         {
             GetChannelResult msg => this.OnGetChannelResult(context, msg),
             ParameterValueChanged msg => this.OnParameterValueChanged(context, msg),
+            ActualTemperatureChanged msg => this.InformRoomAsync(context, msg),
             _ => Task.CompletedTask
         };
+    }
+
+    private async Task InformRoomAsync(IContext context, ActualTemperatureChanged msg)
+    {
+        var room = context.Cluster().GetRoomGrain(this.roomDefinition.Id);
+
+        var joinRoom = new JoinRoom(this.id, context.Self);
+
+        await room.OnTemperatureChanged(
+            new TemperatureChanged
+            {
+                Value = msg.Value,
+                Source = msg.Source,
+                Timestamp = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(msg.Timestamp)
+            },
+            CancellationToken.None
+        );
     }
 
     protected override Task OnStarted(IContext context)
@@ -72,22 +89,17 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
         }
     }
 
-    private async Task OnParameterValueChanged(IContext context, ParameterValueChanged pvc)
+    private Task OnParameterValueChanged(IContext context, ParameterValueChanged pvc)
     {
         if (this.parameters.TryGetValue(pvc.Parameter, out var parameter))
         {
             context.Forward(parameter);
-
-            if (this.roomDefinition is not null)
-            {
-                var pubisher = context.Cluster().Publisher();
-
-                await pubisher.Publish($"rooms/{this.roomDefinition.Id}", new ValueChanged { Value = pvc.Value.ToString() });
-            }
         }
         else
         {
             this.logger.LogWarning("could not find parameter '{parameter}' on channel '{channel}'", pvc.Parameter, this.id);
         }
+
+        return Task.CompletedTask;
     }
 }

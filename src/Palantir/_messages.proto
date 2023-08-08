@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 option csharp_namespace = "Palantir";
 
 message InitializeApartment {
@@ -40,6 +42,8 @@ message Sender {
 	string id = 2;
 }
 
-message ValueChanged {
-	string value = 1;
+message TemperatureChanged {
+	string source = 1;
+	double value = 2;
+	google.protobuf.Timestamp timestamp = 3;
 }
