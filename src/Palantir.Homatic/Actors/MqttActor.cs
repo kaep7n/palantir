@@ -40,7 +40,7 @@ public class MqttActor(ILogger<MqttActor> logger) : IActor
             .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
             .WithClientOptions(new MqttClientOptionsBuilder()
                 .WithClientId("palantir")
-                .WithTcpServer("192.168.2.101")
+                .WithTcpServer("localhost")
                 .Build())
             .Build();
 

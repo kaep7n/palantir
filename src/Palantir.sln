@@ -16,7 +16,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir", "Palantir\Palant
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Api", "Palantir.Api\Palantir.Api.csproj", "{96CE714E-E889-4595-AED4-CE35C92EEE9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir.Homatic.Sys", "Palantir.Homatic.Sys\Palantir.Homatic.Sys.csproj", "{079BB69C-4594-435A-966A-A18C688DD93A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Homatic.Sys", "Palantir.Homatic.Sys\Palantir.Homatic.Sys.csproj", "{079BB69C-4594-435A-966A-A18C688DD93A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir.Homatic.Mock", "Palantir.Homatic.Mock\Palantir.Homatic.Mock.csproj", "{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{079BB69C-4594-435A-966A-A18C688DD93A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{079BB69C-4594-435A-966A-A18C688DD93A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{079BB69C-4594-435A-966A-A18C688DD93A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

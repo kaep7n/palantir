@@ -65,7 +65,7 @@ var host = Host.CreateDefaultBuilder(args)
         });
 
         services.AddHostedService<ActorSystemService>();
-        services.AddHomatic("http://192.168.2.101:2121/");
+        services.AddHomatic("http://localhost:7000/");
     })
     .UseSerilog((context, configuration)
         => configuration.ReadFrom.Configuration(context.Configuration.GetSection("Logging"))
