@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Palantir.Homatic.Http;
 using Proto;
+using System.Text.Json;
 
 namespace Palantir.Homatic.Actors;
 
@@ -17,6 +18,7 @@ public class ApiActor(HomaticHttpClient http, ILogger<ApiActor> logger) : IActor
             GetDevice msg => this.OnGetDevice(context, msg),
             GetChannel msg => this.OnGetChannel(context, msg),
             GetParameter msg => this.OnGetParameter(context, msg),
+            GetParameterValue msg => this.OnGetParameterValue(context, msg),
             Stopped => this.OnStopped(context),
             _ => Task.CompletedTask
         };
@@ -68,6 +70,27 @@ public class ApiActor(HomaticHttpClient http, ILogger<ApiActor> logger) : IActor
 
         context.Respond(new GetParameterResult(parameter));
     }
+
+    private async Task OnGetParameterValue(IContext context, GetParameterValue getParameterValue)
+    {
+        var id = getParameterValue.Id.Split("/");
+
+        var data = await this.http.GetParameterValueAsync(id[0], id[1], id[2])
+            ?? throw new InvalidOperationException($"Unable to get parameter value with id '{getParameterValue.Id}' from Homatic.");
+
+        var timestamp = DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp);
+        var value = data.Value.ValueKind switch
+        {
+            JsonValueKind.Number => data.Value.GetDecimal(),
+            JsonValueKind.String => data.Value.GetString(),
+            JsonValueKind.False => data.Value.GetBoolean(),
+            JsonValueKind.True => (object)data.Value.GetBoolean(),
+            _ => throw new ArgumentException($"Unexpected Value Kind {data.Value.ValueKind}")
+        } ?? throw new InvalidOperationException($"unable to convert json value {data.Value} from type {data.Value.ValueKind}.");
+
+
+        context.Respond(new GetParameterValueResult(timestamp, value));
+    }
 }
 
 public record GetDevices();
@@ -85,3 +108,7 @@ public record GetChannelResult(Channel Channel);
 public record GetParameter(string Id);
 
 public record GetParameterResult(Parameter Parameter);
+
+public record GetParameterValue(string Id);
+
+public record GetParameterValueResult(DateTimeOffset Timestamp, object Value);

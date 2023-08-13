@@ -21,4 +21,8 @@ public class HomaticHttpClient(HttpClient http)
     public async Task<Parameter?> GetParameterAsync(string deviceId, string channelId, string parameterId)
         => await this.http.GetFromJsonAsync<Parameter>($"device/{deviceId}/{channelId}/{parameterId}")
                 .ConfigureAwait(false);
+
+    public async Task<VeapMessage?> GetParameterValueAsync(string deviceId, string channelId, string parameterId)
+    => await this.http.GetFromJsonAsync<VeapMessage>($"device/{deviceId}/{channelId}/{parameterId}/~pv")
+            .ConfigureAwait(false);
 }

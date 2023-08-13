@@ -11,7 +11,7 @@ public class RedisKeyValueStore(IDatabase db, int maxConcurrency) : ConcurrentKe
 
     protected override async Task<Subscribers> InnerGetStateAsync(string id, CancellationToken ct)
     {
-        var value = await db.StringGetAsync(Key(id));
+        var value = await this.db.StringGetAsync(this.Key(id));
         if (value.IsNullOrEmpty)
             return new Subscribers();
 
@@ -19,10 +19,10 @@ public class RedisKeyValueStore(IDatabase db, int maxConcurrency) : ConcurrentKe
     }
 
     protected override Task InnerSetStateAsync(string id, Subscribers state, CancellationToken ct)
-        => db.StringSetAsync(Key(id), state.ToByteArray());
+        => this.db.StringSetAsync(this.Key(id), state.ToByteArray());
 
     protected override Task InnerClearStateAsync(string id, CancellationToken ct)
-        => db.KeyDeleteAsync(Key(id));
+        => this.db.KeyDeleteAsync(this.Key(id));
 
     private string Key(string id) => $"subscribers:{id}";
 }

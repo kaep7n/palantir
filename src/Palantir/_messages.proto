@@ -43,7 +43,13 @@ message Sender {
 }
 
 message TemperatureChanged {
-	string source = 1;
+	Sender sender = 1;
+	double value = 2;
+	google.protobuf.Timestamp timestamp = 3;
+}
+
+message SetTemperatureChanged {
+	Sender sender = 1;
 	double value = 2;
 	google.protobuf.Timestamp timestamp = 3;
 }

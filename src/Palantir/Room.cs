@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Proto;
 using Proto.Cluster;
-using Proto.Cluster.PubSub;
 
 namespace Palantir;
 
@@ -13,9 +12,10 @@ public class Room(IContext context, ClusterIdentity clusterIdentity, ILogger<Roo
 
     private readonly Dictionary<string, PID> devices = new();
 
-    private RoomDefinition? roomDefinition;
+    private RoomDefinition roomDefinition = new() { Id = clusterIdentity.Identity };
 
     private double currentTemperature;
+    private double setTemperature;
 
     public override Task<RoomInitialzed> Initialize(IntializeRoom request)
     {
@@ -30,21 +30,23 @@ public class Room(IContext context, ClusterIdentity clusterIdentity, ILogger<Roo
 
         this.devices.Add(request.Id, PID.FromAddress(request.Sender.Address, request.Sender.Id));
 
-        this.Cluster.Subscribe($"rooms/{this.roomDefinition!.Id}", context =>
-        {
-            this.logger.LogInformation("{id}: value changed {@message}", this.clusterIdentity, context.Message);
-
-            return Task.CompletedTask;
-        });
-
         return Task.FromResult(new RoomJoined { Definition = this.roomDefinition });
     }
 
     public override Task OnTemperatureChanged(TemperatureChanged request)
     {
-        currentTemperature = request.Value;
+        this.currentTemperature = request.Value;
 
-        this.logger.LogWarning("Temperature changed {@request}", request);
+        this.logger.LogInformation("Temperature changed {@request}", request);
+
+        return Task.CompletedTask;
+    }
+
+    public override Task OnSetTemperatureChanged(SetTemperatureChanged request)
+    {
+        this.setTemperature = request.Value;
+
+        this.logger.LogInformation("Set Temperature changed {@request}", request);
 
         return Task.CompletedTask;
     }

@@ -11,6 +11,11 @@ public sealed class Broker : BackgroundService
     private readonly IOptionsMonitor<HomaticOptions> optionsMonitor;
     private readonly ILogger<Broker> logger;
     private readonly List<Parameter> parameters = new();
+    private readonly List<string> relevantIdentifiers = new()
+    {
+        "ACTUAL_TEMPERATURE",
+        "SET_TEMPERATURE"
+    };
 
     public Broker(IOptionsMonitor<HomaticOptions> optionsMonitor, ILogger<Broker> logger)
     {
@@ -30,9 +35,9 @@ public sealed class Broker : BackgroundService
     {
         this.logger.LogInformation("starting broker");
 
-        this.logger.LogInformation("reading parameters from {homaticRootPath}", optionsMonitor.CurrentValue.RootPath);
-        var parameterFiles = Directory.EnumerateFiles(optionsMonitor.CurrentValue.RootPath!, "parameter.json", SearchOption.AllDirectories);
-        this.logger.LogInformation("read {count} parameters from {homaticRootPath}", parameterFiles.Count(), optionsMonitor.CurrentValue.RootPath);
+        this.logger.LogInformation("reading parameters from {homaticRootPath}", this.optionsMonitor.CurrentValue.RootPath);
+        var parameterFiles = Directory.EnumerateFiles(this.optionsMonitor.CurrentValue.RootPath!, "parameter.json", SearchOption.AllDirectories);
+        this.logger.LogInformation("read {count} parameters from {homaticRootPath}", parameterFiles.Count(), this.optionsMonitor.CurrentValue.RootPath);
 
         foreach (var parameterFile in parameterFiles)
         {
@@ -51,7 +56,7 @@ public sealed class Broker : BackgroundService
             this.parameters.Add(parameter);
         }
 
-        this.logger.LogInformation("found {count} parameters", parameters.Count);
+        this.logger.LogInformation("found {count} parameters", this.parameters.Count);
 
         this.logger.LogInformation("starting mqqt broker");
         await this.server.StartAsync();
@@ -77,16 +82,16 @@ public sealed class Broker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var supportedParameters = this.parameters
-                .Where(p => p.Identifier == "ACTUAL_TEMPERATURE")
+            var relevantParameters = this.parameters
+                .Where(p => this.relevantIdentifiers.Contains(p.Identifier))
                 .ToList();
 
-            var actualParameter = supportedParameters[Random.Shared.Next(0, supportedParameters.Count - 1)];
+            var actualParameter = relevantParameters[Random.Shared.Next(0, relevantParameters.Count - 1)];
 
-            var minimum = actualParameter.Minimum.GetInt32();
-            var maximum = actualParameter.Maximum.GetInt32();
+            var minimum = actualParameter.Minimum.GetDouble();
+            var maximum = actualParameter.Maximum.GetDouble();
 
-            var value = Random.Shared.Next(minimum, maximum);
+            var value = Math.Round(Random.Shared.NextDouble() * (maximum - minimum) + minimum, 2);
 
             var payload = new VeapMessage(DateTimeOffset.Now.ToUnixTimeMilliseconds(), value, 0);
             var serializedPayload = JsonSerializer.Serialize(payload);
@@ -96,13 +101,12 @@ public sealed class Broker : BackgroundService
                 .WithPayload(serializedPayload)
                 .Build();
 
-            // Now inject the new message at the broker.
+            this.logger.LogInformation("publishing message {@payload} to topic {topic}", payload, actualParameter.MqttStatusTopic);
+
             await this.server.InjectApplicationMessage(new InjectedMqttApplicationMessage(message)
             {
                 SenderClientId = "Mock"
             }, stoppingToken);
-
-            this.logger.LogInformation("published message {@payload} to topic {topic}", payload, actualParameter.MqttStatusTopic);
 
             await Task.Delay(1000, stoppingToken);
         }

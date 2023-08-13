@@ -2,7 +2,7 @@
   "profiles": {
     "http": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "device",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "dev"

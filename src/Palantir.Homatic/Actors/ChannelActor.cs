@@ -19,26 +19,10 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
         {
             GetChannelResult msg => this.OnGetChannelResult(context, msg),
             ParameterValueChanged msg => this.OnParameterValueChanged(context, msg),
-            ActualTemperatureChanged msg => this.InformRoomAsync(context, msg),
+            TemperatureChanged msg => this.InformRoomAsync(context, msg),
+            SetTemperatureChanged msg => this.InformRoomAsync(context, msg),
             _ => Task.CompletedTask
         };
-    }
-
-    private async Task InformRoomAsync(IContext context, ActualTemperatureChanged msg)
-    {
-        var room = context.Cluster().GetRoomGrain(this.roomDefinition.Id);
-
-        var joinRoom = new JoinRoom(this.id, context.Self);
-
-        await room.OnTemperatureChanged(
-            new TemperatureChanged
-            {
-                Value = msg.Value,
-                Source = msg.Source,
-                Timestamp = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(msg.Timestamp)
-            },
-            CancellationToken.None
-        );
     }
 
     protected override Task OnStarted(IContext context)
@@ -46,6 +30,16 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
         context.Request(this.apiPool, new GetChannel(this.id), context.Self);
 
         return base.OnStarted(context);
+    }
+
+    private async Task InformRoomAsync(IContext context, object msg)
+    {
+        var room = context.Cluster().GetRoomGrain(this.roomDefinition!.Id);
+
+        if (msg is TemperatureChanged temperatureChanged)
+            await room.OnTemperatureChanged(temperatureChanged, CancellationToken.None);
+        if (msg is SetTemperatureChanged setTemperatureChanged)
+            await room.OnSetTemperatureChanged(setTemperatureChanged, CancellationToken.None);
     }
 
     private async Task OnGetChannelResult(IContext context, GetChannelResult result)
