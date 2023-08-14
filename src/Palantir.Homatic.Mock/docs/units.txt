@@ -1,0 +1,11 @@
+
+100%
+%
+°C
+V
+min
+day
+month
+minutes
+year
+s

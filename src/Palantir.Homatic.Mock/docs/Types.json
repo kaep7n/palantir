@@ -1,0 +1,786 @@
+[
+  {
+    "Id": "INSTALL_MODE",
+    "Identifier": "INSTALL_MODE",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "LEVEL",
+    "Identifier": "LEVEL",
+    "Type": "FLOAT",
+    "Unit": "100%",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "1"
+    }
+  },
+  {
+    "Id": "PRESS_LONG",
+    "Identifier": "PRESS_LONG",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "PRESS_SHORT",
+    "Identifier": "PRESS_SHORT",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "AES_KEY",
+    "Identifier": "AES_KEY",
+    "Type": "INTEGER",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "127"
+    }
+  },
+  {
+    "Id": "CONFIG_PENDING",
+    "Identifier": "CONFIG_PENDING",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "DEVICE_IN_BOOTLOADER",
+    "Identifier": "DEVICE_IN_BOOTLOADER",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "LOWBAT",
+    "Identifier": "LOWBAT",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "RSSI_DEVICE",
+    "Identifier": "RSSI_DEVICE",
+    "Type": "INTEGER",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "-2147483648"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "2147483647"
+    }
+  },
+  {
+    "Id": "RSSI_PEER",
+    "Identifier": "RSSI_PEER",
+    "Type": "INTEGER",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "-2147483648"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "2147483647"
+    }
+  },
+  {
+    "Id": "STICKY_UNREACH",
+    "Identifier": "STICKY_UNREACH",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "UNREACH",
+    "Identifier": "UNREACH",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "UPDATE_PENDING",
+    "Identifier": "UPDATE_PENDING",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "ERROR",
+    "Identifier": "ERROR",
+    "Type": "ENUM",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "7"
+    }
+  },
+  {
+    "Id": "INSTALL_TEST",
+    "Identifier": "INSTALL_TEST",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "STATE",
+    "Identifier": "STATE",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "INHIBIT",
+    "Identifier": "INHIBIT",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "HUMIDITY",
+    "Identifier": "HUMIDITY",
+    "Type": "INTEGER",
+    "Unit": "%",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "99"
+    }
+  },
+  {
+    "Id": "TEMPERATURE",
+    "Identifier": "TEMPERATURE",
+    "Type": "FLOAT",
+    "Unit": "\u00B0C",
+    "Min": {
+      "Kind": "Number",
+      "Value": "-10"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "50"
+    }
+  },
+  {
+    "Id": "ACTUAL_HUMIDITY",
+    "Identifier": "ACTUAL_HUMIDITY",
+    "Type": "FLOAT",
+    "Unit": "%",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "99"
+    }
+  },
+  {
+    "Id": "ACTUAL_TEMPERATURE",
+    "Identifier": "ACTUAL_TEMPERATURE",
+    "Type": "FLOAT",
+    "Unit": "\u00B0C",
+    "Min": {
+      "Kind": "Number",
+      "Value": "-10"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "50"
+    }
+  },
+  {
+    "Id": "AUTO_MODE",
+    "Identifier": "AUTO_MODE",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "BATTERY_STATE",
+    "Identifier": "BATTERY_STATE",
+    "Type": "FLOAT",
+    "Unit": "V",
+    "Min": {
+      "Kind": "Number",
+      "Value": "1.5"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "4.6"
+    }
+  },
+  {
+    "Id": "BOOST_MODE",
+    "Identifier": "BOOST_MODE",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "BOOST_STATE",
+    "Identifier": "BOOST_STATE",
+    "Type": "INTEGER",
+    "Unit": "min",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "30"
+    }
+  },
+  {
+    "Id": "COMFORT_MODE",
+    "Identifier": "COMFORT_MODE",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "COMMUNICATION_REPORTING",
+    "Identifier": "COMMUNICATION_REPORTING",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "CONTROL_MODE",
+    "Identifier": "CONTROL_MODE",
+    "Type": "ENUM",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "3"
+    }
+  },
+  {
+    "Id": "LOWBAT_REPORTING",
+    "Identifier": "LOWBAT_REPORTING",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "LOWERING_MODE",
+    "Identifier": "LOWERING_MODE",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "MANU_MODE",
+    "Identifier": "MANU_MODE",
+    "Type": "FLOAT",
+    "Unit": "\u00B0C",
+    "Min": {
+      "Kind": "Number",
+      "Value": "4.5"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "30.5"
+    }
+  },
+  {
+    "Id": "PARTY_MODE_SUBMIT",
+    "Identifier": "PARTY_MODE_SUBMIT",
+    "Type": "STRING",
+    "Unit": "",
+    "Min": {
+      "Kind": "String",
+      "Value": "\u0022\u0022"
+    },
+    "Max": {
+      "Kind": "String",
+      "Value": "\u0022\u0022"
+    }
+  },
+  {
+    "Id": "PARTY_START_DAY",
+    "Identifier": "PARTY_START_DAY",
+    "Type": "INTEGER",
+    "Unit": "day",
+    "Min": {
+      "Kind": "Number",
+      "Value": "1"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "31"
+    }
+  },
+  {
+    "Id": "PARTY_START_MONTH",
+    "Identifier": "PARTY_START_MONTH",
+    "Type": "INTEGER",
+    "Unit": "month",
+    "Min": {
+      "Kind": "Number",
+      "Value": "1"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "12"
+    }
+  },
+  {
+    "Id": "PARTY_START_TIME",
+    "Identifier": "PARTY_START_TIME",
+    "Type": "INTEGER",
+    "Unit": "minutes",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "1410"
+    }
+  },
+  {
+    "Id": "PARTY_START_YEAR",
+    "Identifier": "PARTY_START_YEAR",
+    "Type": "INTEGER",
+    "Unit": "year",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "99"
+    }
+  },
+  {
+    "Id": "PARTY_STOP_DAY",
+    "Identifier": "PARTY_STOP_DAY",
+    "Type": "INTEGER",
+    "Unit": "day",
+    "Min": {
+      "Kind": "Number",
+      "Value": "1"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "31"
+    }
+  },
+  {
+    "Id": "PARTY_STOP_MONTH",
+    "Identifier": "PARTY_STOP_MONTH",
+    "Type": "INTEGER",
+    "Unit": "month",
+    "Min": {
+      "Kind": "Number",
+      "Value": "1"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "12"
+    }
+  },
+  {
+    "Id": "PARTY_STOP_TIME",
+    "Identifier": "PARTY_STOP_TIME",
+    "Type": "INTEGER",
+    "Unit": "minutes",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "1410"
+    }
+  },
+  {
+    "Id": "PARTY_STOP_YEAR",
+    "Identifier": "PARTY_STOP_YEAR",
+    "Type": "INTEGER",
+    "Unit": "year",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "99"
+    }
+  },
+  {
+    "Id": "PARTY_TEMPERATURE",
+    "Identifier": "PARTY_TEMPERATURE",
+    "Type": "FLOAT",
+    "Unit": "\u00B0C",
+    "Min": {
+      "Kind": "Number",
+      "Value": "5"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "30"
+    }
+  },
+  {
+    "Id": "SET_TEMPERATURE",
+    "Identifier": "SET_TEMPERATURE",
+    "Type": "FLOAT",
+    "Unit": "\u00B0C",
+    "Min": {
+      "Kind": "Number",
+      "Value": "4.5"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "30.5"
+    }
+  },
+  {
+    "Id": "WINDOW_OPEN_REPORTING",
+    "Identifier": "WINDOW_OPEN_REPORTING",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "DECISION_VALUE",
+    "Identifier": "DECISION_VALUE",
+    "Type": "INTEGER",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "255"
+    }
+  },
+  {
+    "Id": "DUTYCYCLE",
+    "Identifier": "DUTYCYCLE",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "ON_TIME",
+    "Identifier": "ON_TIME",
+    "Type": "FLOAT",
+    "Unit": "s",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "85825945.6"
+    }
+  },
+  {
+    "Id": "WORKING",
+    "Identifier": "WORKING",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "DIRECTION",
+    "Identifier": "DIRECTION",
+    "Type": "ENUM",
+    "Unit": "",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "3"
+    }
+  },
+  {
+    "Id": "STOP",
+    "Identifier": "STOP",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "ERROR_OVERHEAT",
+    "Identifier": "ERROR_OVERHEAT",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "ERROR_OVERLOAD",
+    "Identifier": "ERROR_OVERLOAD",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "ERROR_REDUCED",
+    "Identifier": "ERROR_REDUCED",
+    "Type": "BOOL",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "LEVEL_REAL",
+    "Identifier": "LEVEL_REAL",
+    "Type": "FLOAT",
+    "Unit": "100%",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "1"
+    }
+  },
+  {
+    "Id": "OLD_LEVEL",
+    "Identifier": "OLD_LEVEL",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "RAMP_STOP",
+    "Identifier": "RAMP_STOP",
+    "Type": "ACTION",
+    "Unit": "",
+    "Min": {
+      "Kind": "False",
+      "Value": "false"
+    },
+    "Max": {
+      "Kind": "True",
+      "Value": "true"
+    }
+  },
+  {
+    "Id": "RAMP_TIME",
+    "Identifier": "RAMP_TIME",
+    "Type": "FLOAT",
+    "Unit": "s",
+    "Min": {
+      "Kind": "Number",
+      "Value": "0"
+    },
+    "Max": {
+      "Kind": "Number",
+      "Value": "85825945.6"
+    }
+  }
+]

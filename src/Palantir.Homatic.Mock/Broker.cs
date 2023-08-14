@@ -31,6 +31,10 @@ public sealed class Broker : BackgroundService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    private record ParameterGroup(string Id, string Identifier, string Type, string Unit, ParameterValue Min, ParameterValue Max);
+
+    private record ParameterValue(string Kind, string Value);
+
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         this.logger.LogInformation("starting broker");
@@ -38,6 +42,8 @@ public sealed class Broker : BackgroundService
         this.logger.LogInformation("reading parameters from {homaticRootPath}", this.optionsMonitor.CurrentValue.RootPath);
         var parameterFiles = Directory.EnumerateFiles(this.optionsMonitor.CurrentValue.RootPath!, "parameter.json", SearchOption.AllDirectories);
         this.logger.LogInformation("read {count} parameters from {homaticRootPath}", parameterFiles.Count(), this.optionsMonitor.CurrentValue.RootPath);
+
+        var httpClient = new HttpClient();
 
         foreach (var parameterFile in parameterFiles)
         {
@@ -51,10 +57,42 @@ public sealed class Broker : BackgroundService
             if (parameter is null)
                 continue;
 
+            //if (parameter.MqttStatusTopic is not null)
+            //{
+            //    var status = await httpClient.GetAsync($"http://192.168.2.101:2121/{parameter.MqttStatusTopic.Replace("status/", string.Empty)}/~pv");
+            //    var result = await status.Content.ReadFromJsonAsync<VeapMessage>();
+
+            //    var valueKind = result.Value.ValueKind;
+
+            //    string value = string.Empty;
+
+            //    try
+            //    {
+            //        value = result.Value.GetRawText();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        this.logger.LogError(ex, "ERROR");
+            //    }
+
+            //    File.AppendAllText("params.csv", $"{parameter.Identifier};{parameter.MqttStatusTopic};{parameter.Minimum.ValueKind};{parameter.Minimum.GetRawText()};{parameter.Maximum.ValueKind};{parameter.Maximum.GetRawText()};{parameter.Type};{parameter.Unit};{valueKind};{value};{Environment.NewLine}");
+            //}
+
             this.logger.LogInformation("adding parameter {title} with topic {topic}", parameter.Title, parameter.MqttStatusTopic);
 
             this.parameters.Add(parameter);
         }
+
+        //var g = this.parameters
+        //    .Where(p => p.Identifier != "$MASTER")
+        //    .Select(p => new ParameterGroup(p.Id, p.Identifier, p.Type, p.Unit, new ParameterValue(p.Minimum.ValueKind.ToString(), p.Minimum.GetRawText()), new ParameterValue(p.Maximum.ValueKind.ToString(), p.Maximum.GetRawText())))
+        //    .Distinct()
+        //    .ToList();
+
+        //var units = string.Join(Environment.NewLine, g.Select(i => i.Unit).Distinct().ToList());
+        //var types = string.Join(Environment.NewLine, g.Select(i => i.Type).Distinct().ToList());
+        //var identifiers = string.Join(Environment.NewLine, g.Select(i => i.Identifier).Distinct().ToList());
+        //var minimum = string.Join(Environment.NewLine, g.Select(i => new { i.Min, i.Max }).Distinct().ToList());
 
         this.logger.LogInformation("found {count} parameters", this.parameters.Count);
 

@@ -66,9 +66,15 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
 
             var joinRoom = new JoinRoom(this.id, context.Self);
 
-            var roomJoined = await room.Join(joinRoom, CancellationToken.None);
+            try
+            {
+                var roomJoined = await room.Join(joinRoom, CancellationToken.None);
+                this.roomDefinition = roomJoined?.Definition;
+            }
+            catch (Exception ex)
+            {
 
-            this.roomDefinition = roomJoined?.Definition;
+            }
         }
 
         foreach (var link in result.Channel.Links)
