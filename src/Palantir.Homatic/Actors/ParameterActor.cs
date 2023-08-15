@@ -25,7 +25,9 @@ public class ParameterActor(PID apiPool, string id, ILogger<ParameterActor> logg
     protected override Task OnStarted(IContext context)
     {
         context.Request(this.apiPool, new GetParameter(this.id), context.Self);
-        context.Request(this.apiPool, new GetParameterValue(this.id), context.Self);
+
+        if (!this.id.EndsWith("$MASTER"))
+            context.Request(this.apiPool, new GetParameterValue(this.id), context.Self);
 
         return base.OnStarted(context);
     }

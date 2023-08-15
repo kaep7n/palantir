@@ -95,16 +95,16 @@ public class MqttActor(ILogger<MqttActor> logger) : IActor
         var timestamp = DateTimeOffset.FromUnixTimeMilliseconds(data.Timestamp);
         var value = data.Value.ValueKind switch
         {
-            JsonValueKind.Number => data.Value.GetDecimal(),
+            JsonValueKind.Number => data.Value.GetDouble(),
             JsonValueKind.String => data.Value.GetString(),
             JsonValueKind.False => data.Value.GetBoolean(),
             JsonValueKind.True => (object)data.Value.GetBoolean(),
             _ => throw new ArgumentException($"Unexpected Value Kind {data.Value.ValueKind}")
         } ?? throw new InvalidOperationException($"unable to convert json value {data.Value} from type {data.Value.ValueKind}.");
 
-        var deviceData = new ParameterValueChanged(device, channel, type, timestamp, value, data.Status);
+        var pvc = new ParameterValueChanged(device, channel, type, timestamp, value, data.Status);
 
-        this.system.Root.Send(this.parent, deviceData);
+        this.system.Root.Send(this.parent, pvc);
 
         return Task.CompletedTask;
     }

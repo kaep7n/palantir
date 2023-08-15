@@ -9,6 +9,7 @@ using Proto.Cluster.Consul;
 using Proto.Cluster.Partition;
 using Proto.Cluster.PubSub;
 using Proto.DependencyInjection;
+using Proto.OpenTelemetry;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
 using Serilog;
@@ -48,6 +49,18 @@ var host = Host.CreateDefaultBuilder(args)
             var clusterName = "palantir";
             var clusterProvider = new ConsulProvider(new ConsulProviderConfig());
 
+            var apartmentProps = Props.FromProducer(()
+                => new ApartmentGrainActor(
+                    (cluster, clusterIdentity) => ActivatorUtilities.CreateInstance<Apartment>(p, cluster, clusterIdentity)
+                    )
+            ).WithTracing();
+
+            var roomProps = Props.FromProducer(()
+            => new RoomGrainActor(
+                (cluster, clusterIdentity) => ActivatorUtilities.CreateInstance<Room>(p, cluster, clusterIdentity)
+                )
+            ).WithTracing();
+
             var actorSystem = new ActorSystem(actorSystemConfig);
 
             actorSystem
@@ -57,6 +70,8 @@ var host = Host.CreateDefaultBuilder(args)
                         .Setup(clusterName, clusterProvider, new PartitionIdentityLookup())
                         // explicit topic actor registration is needed to provide a key value store implementation
                         .WithClusterKind(TopicActor.Kind, Props.FromProducer(() => new TopicActor(kvStore)))
+                        .WithClusterKind(ApartmentGrainActor.Kind, apartmentProps)
+                        .WithClusterKind(RoomGrainActor.Kind, roomProps)
                     )
                     .Cluster()
                     .WithPidCacheInvalidation();

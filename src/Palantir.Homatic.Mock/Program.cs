@@ -61,12 +61,7 @@ app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", (IOptionsSnapshot<
     if (parameter is null)
         return Results.NotFound($"parameter '{deviceId}/{channelId}/{parameter}' not found.");
 
-    var minimum = parameter.Minimum.GetDouble();
-    var maximum = parameter.Maximum.GetDouble();
-
-    var value = Math.Round(Random.Shared.NextDouble() * (maximum - minimum) + minimum, 2);
-
-    var payload = new VeapMessage(DateTimeOffset.Now.ToUnixTimeMilliseconds(), value, 0);
+    var payload = Randomizer.VeapMessage(parameter);
 
     return Results.Json(payload);
 });

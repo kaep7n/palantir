@@ -124,22 +124,18 @@ public sealed class Broker : BackgroundService
                 .Where(p => this.relevantIdentifiers.Contains(p.Identifier))
                 .ToList();
 
-            var actualParameter = relevantParameters[Random.Shared.Next(0, relevantParameters.Count - 1)];
+            var parameter = relevantParameters[Random.Shared.Next(0, relevantParameters.Count - 1)];
 
-            var minimum = actualParameter.Minimum.GetDouble();
-            var maximum = actualParameter.Maximum.GetDouble();
+            var payload = Randomizer.VeapMessage(parameter);
 
-            var value = Math.Round(Random.Shared.NextDouble() * (maximum - minimum) + minimum, 2);
-
-            var payload = new VeapMessage(DateTimeOffset.Now.ToUnixTimeMilliseconds(), value, 0);
             var serializedPayload = JsonSerializer.Serialize(payload);
 
             var message = new MqttApplicationMessageBuilder()
-                .WithTopic(actualParameter.MqttStatusTopic)
+                .WithTopic(parameter.MqttStatusTopic)
                 .WithPayload(serializedPayload)
                 .Build();
 
-            this.logger.LogInformation("publishing message {@payload} to topic {topic}", payload, actualParameter.MqttStatusTopic);
+            this.logger.LogInformation("publishing message {@payload} to topic {topic}", payload, parameter.MqttStatusTopic);
 
             await this.server.InjectApplicationMessage(new InjectedMqttApplicationMessage(message)
             {

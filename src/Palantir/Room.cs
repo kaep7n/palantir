@@ -16,6 +16,7 @@ public class Room(IContext context, ClusterIdentity clusterIdentity, ILogger<Roo
 
     private double currentTemperature;
     private double setTemperature;
+    private bool isHeating;
 
     public override Task<RoomInitialzed> Initialize(IntializeRoom request)
     {
