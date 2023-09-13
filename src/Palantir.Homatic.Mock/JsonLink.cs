@@ -2,7 +2,7 @@
 
 namespace Palantir.Homatic.Mock;
 
-public record Link(
+public record JsonLink(
     [property: JsonPropertyName("rel")] string Rel,
     [property: JsonPropertyName("href")] string Href,
     [property: JsonPropertyName("title")] string Title

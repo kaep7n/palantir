@@ -2,7 +2,7 @@
 
 public static class Randomizer
 {
-    public static VeapMessage VeapMessage(Parameter parameter)
+    public static Veap VeapMessage(JsonParameter parameter)
     {
         var value = RandomizeParameterValue(parameter);
 
@@ -34,10 +34,10 @@ public static class Randomizer
                 throw new InvalidOperationException($"Value {value} is not between {minValue} and {maxValue}");
         }
 
-        return new VeapMessage(DateTimeOffset.Now.ToUnixTimeMilliseconds(), value, 0);
+        return new Veap(DateTimeOffset.Now.ToUnixTimeMilliseconds(), value, 0);
     }
 
-    public static object RandomizeParameterValue(Parameter parameter)
+    public static object RandomizeParameterValue(JsonParameter parameter)
     {
         return parameter.Identifier switch
         {

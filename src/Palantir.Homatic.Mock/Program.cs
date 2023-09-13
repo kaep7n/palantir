@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 using Palantir.Homatic.Mock;
 using Serilog;
-using System.Text.Json;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -10,60 +9,38 @@ builder.Host.UseSerilog((context, configuration)
 );
 
 builder.Services.Configure<HomaticOptions>(builder.Configuration.GetSection("Homatic"));
-builder.Services.AddHostedService<Broker>();
+builder.Services.AddHostedService<Mock>();
 
 var app = builder.Build();
 
-app.MapGet("device", (IOptionsSnapshot<HomaticOptions> options) =>
-    Results.Content(
-        File.ReadAllText(
-            Path.Combine(options.Value.RootPath!, "devices.json")
-            ),
-        "application/json"
-        )
-    );
+app.MapGet("device", (Mock mock)
+    => mock.Homatic?.GetRaw()
+);
 
-app.MapGet("device/{deviceId}", (IOptionsSnapshot<HomaticOptions> options, string deviceId) =>
-    Results.Content(
-        File.ReadAllText(
-            Path.Combine(options.Value.RootPath!, @$"devices\{deviceId}\device.json")
-            ),
-        "application/json"
-        )
-    );
+app.MapGet("device/{deviceId}", (Mock mock, string deviceId)
+    => mock.Homatic?.GetDevice(deviceId).GetRaw()
+);
 
-app.MapGet("device/{deviceId}/{channelId}", (IOptionsSnapshot<HomaticOptions> options, string deviceId, string channelId) =>
-    Results.Content(
-        File.ReadAllText(
-            Path.Combine(options.Value.RootPath!, @$"devices\{deviceId}\channels\{channelId}\channel.json")
-            ),
-        "application/json"
-        )
-    );
+app.MapGet("device/{deviceId}/{channelId}", (Mock mock, string deviceId, string channelId)
+    => mock.Homatic?.GetChannel(deviceId, channelId).GetRaw()
+);
 
-app.MapGet("device/{deviceId}/{channelId}/{parameterId}", (IOptionsSnapshot<HomaticOptions> options, string deviceId, string channelId, string parameterId) =>
-    Results.Content(
-        File.ReadAllText(
-            Path.Combine(options.Value.RootPath!, @$"devices\{deviceId}\channels\{channelId}\parameters\{parameterId}\parameter.json")
-            ),
-        "application/json"
-        )
-    );
+app.MapGet("device/{deviceId}/{channelId}/{parameterId}", (Mock mock, string deviceId, string channelId, string parameterId)
+    => mock.Homatic?.GetParameter(deviceId, channelId, parameterId).GetRaw()
+);
 
-app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", (IOptionsSnapshot<HomaticOptions> options, string deviceId, string channelId, string parameterId) =>
+app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", (Mock mock, string deviceId, string channelId, string parameterId) =>
+    { }
+);
+
+app.MapPut("device/{deviceId}/{channelId}/{parameterId}/~pv", (FakeHomatic homatic, string deviceId, string channelId, string parameterId, [FromBody] SetValueRequest request) =>
 {
-    var json = File.ReadAllText(
-        Path.Combine(options.Value.RootPath!, @$"devices\{deviceId}\channels\{channelId}\parameters\{parameterId}\parameter.json")
-        );
+    var parameter = homatic.Devices.FirstOrDefault(d => d.Identifier == deviceId)?
+        .Channels.FirstOrDefault(c => c.Identifier == channelId)?
+        .Parameters.FirstOrDefault(p => p.Identifier == parameterId);
 
-    var parameter = JsonSerializer.Deserialize<Parameter>(json);
-
-    if (parameter is null)
-        return Results.NotFound($"parameter '{deviceId}/{channelId}/{parameter}' not found.");
-
-    var payload = Randomizer.VeapMessage(parameter);
-
-    return Results.Json(payload);
+    if (parameter is not null)
+        return;
 });
 
 app.Run();
