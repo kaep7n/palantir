@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Palantir.Homatic.Mock;
+namespace Palantir.Homatic.Mock.Json;
 
 public record JsonDevices(
     [property: JsonPropertyName("description")] string Description,

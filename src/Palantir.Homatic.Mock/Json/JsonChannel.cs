@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Palantir.Homatic.Mock;
+namespace Palantir.Homatic.Mock.Json;
 
 public record JsonChannel(
      [property: JsonPropertyName("address")] string Address,

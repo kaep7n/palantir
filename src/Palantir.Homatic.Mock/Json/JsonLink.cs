@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Palantir.Homatic.Mock;
+namespace Palantir.Homatic.Mock.Json;
 
 public record JsonLink(
     [property: JsonPropertyName("rel")] string Rel,

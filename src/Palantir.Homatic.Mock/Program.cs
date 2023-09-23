@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Palantir.Homatic.Mock;
 using Serilog;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -9,39 +10,39 @@ builder.Host.UseSerilog((context, configuration)
 );
 
 builder.Services.Configure<HomaticOptions>(builder.Configuration.GetSection("Homatic"));
-builder.Services.AddHostedService<Mock>();
+
+builder.Services.AddHostedService<Homatic>();
 
 var app = builder.Build();
 
-app.MapGet("device", (Mock mock)
-    => mock.Homatic?.GetRaw()
+app.MapGet("device", (Homatic homatic)
+    => homatic.GetRaw()
 );
 
-app.MapGet("device/{deviceId}", (Mock mock, string deviceId)
-    => mock.Homatic?.GetDevice(deviceId).GetRaw()
+app.MapGet("device/{deviceId}", (Homatic homatic, string deviceId)
+    => homatic.GetDevice(deviceId).GetRaw()
 );
 
-app.MapGet("device/{deviceId}/{channelId}", (Mock mock, string deviceId, string channelId)
-    => mock.Homatic?.GetChannel(deviceId, channelId).GetRaw()
+app.MapGet("device/{deviceId}/{channelId}", (Homatic homatic, string deviceId, string channelId)
+    => homatic.GetChannel(deviceId, channelId).GetRaw()
 );
 
-app.MapGet("device/{deviceId}/{channelId}/{parameterId}", (Mock mock, string deviceId, string channelId, string parameterId)
-    => mock.Homatic?.GetParameter(deviceId, channelId, parameterId).GetRaw()
+app.MapGet("device/{deviceId}/{channelId}/{parameterId}", (Homatic homatic, string deviceId, string channelId, string parameterId)
+    => homatic.GetParameter(deviceId, channelId, parameterId).GetRaw()
 );
 
-app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", (Mock mock, string deviceId, string channelId, string parameterId) =>
-    { }
-);
-
-app.MapPut("device/{deviceId}/{channelId}/{parameterId}/~pv", (FakeHomatic homatic, string deviceId, string channelId, string parameterId, [FromBody] SetValueRequest request) =>
+app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", (Homatic homatic, string deviceId, string channelId, string parameterId) =>
 {
-    var parameter = homatic.Devices.FirstOrDefault(d => d.Identifier == deviceId)?
-        .Channels.FirstOrDefault(c => c.Identifier == channelId)?
-        .Parameters.FirstOrDefault(p => p.Identifier == parameterId);
+    return homatic.GetParameterValue(deviceId, channelId, parameterId);
+});
 
-    if (parameter is not null)
-        return;
+app.MapPut("device/{deviceId}/{channelId}/{parameterId}/~pv", (Homatic homatic, string deviceId, string channelId, string parameterId, [FromBody] SetValueRequest request) =>
+{
+    homatic.SetParameterValue(deviceId, channelId, parameterId, request.Value);
 });
 
 app.Run();
 
+public record SetValueRequest(
+    [property: JsonPropertyName("v")] object Value
+);

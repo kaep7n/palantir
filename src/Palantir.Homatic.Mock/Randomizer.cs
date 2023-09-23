@@ -1,4 +1,6 @@
-﻿namespace Palantir.Homatic.Mock;
+﻿using Palantir.Homatic.Mock.Json;
+
+namespace Palantir.Homatic.Mock;
 
 public static class Randomizer
 {
