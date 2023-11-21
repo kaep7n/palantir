@@ -8,7 +8,7 @@ public record Device
 {
     private JsonDevice raw;
 
-    public Device(JsonDevice raw, List<Channel> channels)
+    public Device(JsonDevice raw, IImmutableList<Channel> channels)
     {
         this.raw = raw;
 
@@ -38,7 +38,7 @@ public record Device
         this.Title = raw.Title;
         this.Type = raw.Type;
         this.Version = raw.Version;
-        this.Channels = channels.ToImmutableList();
+        this.Channels = channels;
     }
 
     public string Address { get; init; }

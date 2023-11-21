@@ -8,7 +8,7 @@ public record Channel
 {
     private readonly JsonChannel raw;
 
-    public Channel(JsonChannel raw, List<string> rooms, List<Parameter> parameters)
+    public Channel(JsonChannel raw, IImmutableList<string> rooms, IImmutableList<Parameter> parameters)
     {
         this.raw = raw;
 
@@ -37,8 +37,8 @@ public record Channel
         this.Title = raw.Title;
         this.Type = raw.Type;
         this.Version = raw.Version;
-        this.Rooms = rooms.ToImmutableList();
-        this.Parameters = parameters.ToImmutableList();
+        this.Rooms = rooms;
+        this.Parameters = parameters;
     }
 
     public string Address { get; init; }

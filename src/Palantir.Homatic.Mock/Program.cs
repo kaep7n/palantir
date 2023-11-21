@@ -11,32 +11,33 @@ builder.Host.UseSerilog((context, configuration)
 
 builder.Services.Configure<HomaticOptions>(builder.Configuration.GetSection("Homatic"));
 
-builder.Services.AddHostedService<Homatic>();
+builder.Services.AddSingleton<Homatic>();
+builder.Services.AddHostedService(p => p.GetRequiredService<Homatic>());
 
 var app = builder.Build();
 
-app.MapGet("device", (Homatic homatic)
+app.MapGet("device", ([FromServices] Homatic homatic)
     => homatic.GetRaw()
 );
 
-app.MapGet("device/{deviceId}", (Homatic homatic, string deviceId)
+app.MapGet("device/{deviceId}", ([FromServices] Homatic homatic, string deviceId)
     => homatic.GetDevice(deviceId).GetRaw()
 );
 
-app.MapGet("device/{deviceId}/{channelId}", (Homatic homatic, string deviceId, string channelId)
+app.MapGet("device/{deviceId}/{channelId}", ([FromServices] Homatic homatic, string deviceId, string channelId)
     => homatic.GetChannel(deviceId, channelId).GetRaw()
 );
 
-app.MapGet("device/{deviceId}/{channelId}/{parameterId}", (Homatic homatic, string deviceId, string channelId, string parameterId)
+app.MapGet("device/{deviceId}/{channelId}/{parameterId}", ([FromServices] Homatic homatic, string deviceId, string channelId, string parameterId)
     => homatic.GetParameter(deviceId, channelId, parameterId).GetRaw()
 );
 
-app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", (Homatic homatic, string deviceId, string channelId, string parameterId) =>
+app.MapGet("device/{deviceId}/{channelId}/{parameterId}/~pv", ([FromServices] Homatic homatic, string deviceId, string channelId, string parameterId) =>
 {
     return homatic.GetParameterValue(deviceId, channelId, parameterId);
 });
 
-app.MapPut("device/{deviceId}/{channelId}/{parameterId}/~pv", (Homatic homatic, string deviceId, string channelId, string parameterId, [FromBody] SetValueRequest request) =>
+app.MapPut("device/{deviceId}/{channelId}/{parameterId}/~pv", ([FromServices] Homatic homatic, string deviceId, string channelId, string parameterId, [FromBody] SetValueRequest request) =>
 {
     homatic.SetParameterValue(deviceId, channelId, parameterId, request.Value);
 });

@@ -8,6 +8,6 @@ namespace Palantir.Homatic.Mock;
 /// </summary>
 public record Veap(
     [property: JsonPropertyName("ts")] long Timestamp,
-    [property: JsonPropertyName("v")] object Value,
+    [property: JsonPropertyName("v")] object? Value,
     [property: JsonPropertyName("s")] int Status
 );

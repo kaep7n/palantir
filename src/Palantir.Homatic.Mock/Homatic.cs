@@ -2,6 +2,7 @@
 using MQTTnet;
 using MQTTnet.Server;
 using Palantir.Homatic.Mock.Json;
+using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Palantir.Homatic.Mock;
@@ -10,15 +11,15 @@ public sealed class Homatic : IHostedService
 {
     private readonly IOptionsMonitor<HomaticOptions> optionsMonitor;
     private readonly ILogger<Homatic> logger;
-    private JsonDevices jsonDevices;
+    private JsonDevices? jsonDevices;
 
-    private MqttServer server;
+    private readonly MqttServer server;
 
-    private System.Threading.Channels.Channel<MqttApplicationMessage> outbox = System.Threading.Channels.Channel.CreateUnbounded<MqttApplicationMessage>();
+    private readonly System.Threading.Channels.Channel<MqttApplicationMessage> outbox = System.Threading.Channels.Channel.CreateUnbounded<MqttApplicationMessage>();
 
-    public string RootPath => this.optionsMonitor.CurrentValue.RootPath;
+    public string? RootPath => this.optionsMonitor.CurrentValue?.RootPath;
 
-    public List<Device> Devices { get; set; } = new List<Device>();
+    public IImmutableList<Device> Devices { get; set; } = ImmutableList<Device>.Empty;
 
     public Homatic(IOptionsMonitor<HomaticOptions> optionsMonitor, ILogger<Homatic> logger)
     {
@@ -39,6 +40,9 @@ public sealed class Homatic : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        if (this.RootPath is null)
+            throw new InvalidOperationException("Root path must not be null.");
+
         this.logger.LogInformation("starting homatic");
         var jsonDevicesPath = Path.Combine(this.RootPath, "devices.json");
 
@@ -64,7 +68,7 @@ public sealed class Homatic : IHostedService
     }
 
 
-    public JsonDevices GetRaw()
+    public JsonDevices? GetRaw()
     {
         return this.jsonDevices;
     }
@@ -92,7 +96,28 @@ public sealed class Homatic : IHostedService
     {
         var parameter = this.GetParameter(deviceId, channelId, parameterId);
 
-        // TODO: set value here
+        var updatedParameter = parameter with
+        {
+            CurrentValue = value,
+            CurrentValueChanged = DateTimeOffset.Now
+        };
+
+        var channel = this.GetChannel(deviceId, channelId);
+
+        var updatedChannel = channel with
+        {
+            Parameters = channel.Parameters.Replace(parameter, updatedParameter)
+        };
+
+        var device = this.GetDevice(deviceId);
+
+        var updatedDevice = device with
+        {
+            Channels = device.Channels.Replace(channel, updatedChannel)
+        };
+
+        this.Devices = this.Devices.Replace(device, updatedDevice);
+
         var payload = new Veap(DateTimeOffset.Now.ToUnixTimeMilliseconds(), value, 0);
 
         var serializedPayload = JsonSerializer.Serialize(payload);
@@ -106,14 +131,81 @@ public sealed class Homatic : IHostedService
             this.logger.LogInformation("wrote {@message} to outbox", message);
         else
             this.logger.LogWarning("could not write {@message} to outbox", message);
-
-
     }
 
     public void Dispose()
     {
         this.server.Dispose();
     }
+
+    private ImmutableList<Device> ReadDevices(JsonDevices jsonDevices)
+        => this.RootPath is null
+            ? throw new InvalidOperationException("Root path must not be null.")
+            : jsonDevices.Links.Where(l => l.Rel == "device")
+               .Select(l =>
+               {
+                   var jsonDevicePath = Path.Combine(this.RootPath, "devices", l.Href, "device.json");
+                   var jsonDevice = JsonSerializer.Deserialize<JsonDevice>(File.ReadAllText(jsonDevicePath))
+                       ?? throw new InvalidOperationException($"could not read device from path '{jsonDevicePath}'");
+
+                   var channels = this.ReadChannels(jsonDevice);
+
+                   return new Device(jsonDevice, channels);
+               })
+               .ToImmutableList();
+
+    private ImmutableList<Channel> ReadChannels(JsonDevice jsonDevice)
+        => this.RootPath is null
+            ? throw new InvalidOperationException("Root path must not be null.")
+            : jsonDevice.Links.Where(l => l.Rel == "channel")
+                .Select(l =>
+                {
+                    var jsonChannelPath = Path.Combine(
+                        this.RootPath,
+                        "devices",
+                        jsonDevice.Identifier,
+                        "channels",
+                        l.Href,
+                        "channel.json"
+                    );
+
+                    var jsonChannel = JsonSerializer.Deserialize<JsonChannel>(File.ReadAllText(jsonChannelPath))
+                        ?? throw new InvalidOperationException($"could not read channel from path '{jsonChannelPath}'"); ;
+
+                    var parameters = this.ReadParameters(jsonDevice, jsonChannel);
+                    var rooms = ReadRooms(jsonChannel);
+
+                    return new Channel(jsonChannel, rooms, parameters);
+                }).ToImmutableList();
+
+    private ImmutableList<Parameter> ReadParameters(JsonDevice jsonDevice, JsonChannel jsonChannel)
+        => this.RootPath is null
+            ? throw new InvalidOperationException("Root path must not be null.")
+            : jsonChannel.Links.Where(l => l.Rel == "parameter")
+                .Select(l =>
+                {
+                    var jsonParameterPath = Path.Combine(
+                        this.RootPath,
+                        "devices",
+                        jsonDevice.Identifier,
+                        "channels",
+                        jsonChannel.Identifier,
+                        "parameters",
+                        l.Href,
+                        "parameter.json"
+                    );
+
+                    var jsonParameter = JsonSerializer.Deserialize<JsonParameter>(File.ReadAllText(jsonParameterPath))
+                        ?? throw new InvalidOperationException($"could not read parameter from path '{jsonParameterPath}'");
+
+                    return new Parameter(jsonParameter);
+                })
+                .ToImmutableList();
+
+    private static ImmutableList<string> ReadRooms(JsonChannel jsonChannel)
+        => jsonChannel.Links.Where(l => l.Rel == "room")
+            .Select(l => l.Href.Replace("/room/", string.Empty))
+            .ToImmutableList();
 
     private async Task ProcessOutbox(CancellationToken cancellationToken)
     {
@@ -127,66 +219,4 @@ public sealed class Homatic : IHostedService
             }, cancellationToken);
         }
     }
-
-    private List<Device> ReadDevices(JsonDevices jsonDevices)
-    {
-        return jsonDevices.Links.Where(l => l.Rel == "devices")
-            .Select(l =>
-            {
-                var jsonDevicePath = Path.Combine(this.RootPath, "devices", l.Href, "device.json");
-                var jsonDevice = JsonSerializer.Deserialize<JsonDevice>(File.ReadAllText(jsonDevicePath))
-                    ?? throw new InvalidOperationException($"could not read device from path '{jsonDevicePath}'");
-
-                var channels = this.ReadChannels(l, jsonDevice);
-
-                return new Device(jsonDevice, channels);
-            })
-            .ToList();
-    }
-
-    private List<Channel> ReadChannels(JsonLink jsonDevicesLink, JsonDevice jsonDevice)
-    {
-        return jsonDevice.Links.Where(l => l.Rel == "channel")
-            .Select(l =>
-            {
-                var jsonChannelPath = Path.Combine(
-                    this.RootPath, "devices",
-                    jsonDevicesLink.Href, "channels",
-                    l.Href, "channel.json"
-                );
-
-                var jsonChannel = JsonSerializer.Deserialize<JsonChannel>(File.ReadAllText(jsonChannelPath))
-                    ?? throw new InvalidOperationException($"could not read channel from path '{jsonChannelPath}'"); ;
-
-                var parameters = this.ReadParameters(jsonDevicesLink, jsonDevicesLink, jsonChannel);
-                var rooms = ReadRooms(jsonChannel);
-
-                return new Channel(jsonChannel, rooms, parameters);
-            }).ToList();
-    }
-
-    private List<Parameter> ReadParameters(JsonLink jsonDevicesLink, JsonLink jsonDeviceLink, JsonChannel jsonChannel)
-    {
-        return jsonChannel.Links.Where(l => l.Rel == "parameter")
-            .Select(l =>
-            {
-                var jsonParameterPath = Path.Combine(
-                    this.RootPath, "devices",
-                    jsonDevicesLink.Href, "channels",
-                    jsonDeviceLink.Href, "parameters",
-                    l.Href, "parameter.json"
-                );
-
-                var jsonParameter = JsonSerializer.Deserialize<JsonParameter>(File.ReadAllText(jsonParameterPath))
-                    ?? throw new InvalidOperationException($"could not read parameter from path '{jsonParameterPath}'");
-
-                return new Parameter(jsonParameter);
-            })
-            .ToList();
-    }
-
-    private static List<string> ReadRooms(JsonChannel jsonChannel)
-        => jsonChannel.Links.Where(l => l.Rel == "room")
-            .Select(l => l.Href.Replace("/room/", string.Empty))
-            .ToList();
 }
