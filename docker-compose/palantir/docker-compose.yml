@@ -41,8 +41,21 @@ services:
     ports:
       - 127.0.0.1:6379:6379
 
+  timescale-db:
+    image: timescale/timescaledb-ha:pg15-latest
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: A123456!
+    volumes:
+      - timescale-db-data:/var/lib/postgresql/data
+
 networks:
   consul:
 
 volumes:
   mongodb_data:
+  
+  timescale-db-data:
