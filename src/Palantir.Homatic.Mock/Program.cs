@@ -25,7 +25,12 @@ app.MapGet("device/{deviceId}", ([FromServices] Homatic homatic, string deviceId
 );
 
 app.MapGet("device/{deviceId}/{channelId}", ([FromServices] Homatic homatic, string deviceId, string channelId)
-    => homatic.GetChannel(deviceId, channelId).GetRaw()
+    =>
+{
+    var channel = homatic.GetChannel(deviceId, channelId).GetRaw();
+
+    return channel;
+}
 );
 
 app.MapGet("device/{deviceId}/{channelId}/{parameterId}", ([FromServices] Homatic homatic, string deviceId, string channelId, string parameterId)

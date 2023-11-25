@@ -10,23 +10,23 @@ public static class Randomizer
 
         object? minValue = parameter.Type switch
         {
-            "ACTION" => parameter.Minimum.GetBoolean(),
-            "BOOL" => parameter.Minimum.GetBoolean(),
-            "ENUM" => parameter.Minimum.GetInt32(),
-            "FLOAT" => parameter.Minimum.GetDouble(),
-            "INTEGER" => parameter.Minimum.GetInt32(),
-            "STRING" => parameter.Minimum.GetString(),
+            "ACTION" => parameter.Minimum.Value.GetBoolean(),
+            "BOOL" => parameter.Minimum.Value.GetBoolean(),
+            "ENUM" => parameter.Minimum.Value.GetInt32(),
+            "FLOAT" => parameter.Minimum.Value.GetDouble(),
+            "INTEGER" => parameter.Minimum.Value.GetInt32(),
+            "STRING" => parameter.Minimum.Value.GetString(),
             _ => throw new InvalidOperationException($"Unexpected type {parameter.Type}.")
         };
 
         object? maxValue = parameter.Type switch
         {
-            "ACTION" => parameter.Maximum.GetBoolean(),
-            "BOOL" => parameter.Maximum.GetBoolean(),
-            "ENUM" => parameter.Maximum.GetInt32(),
-            "FLOAT" => parameter.Maximum.GetDouble(),
-            "INTEGER" => parameter.Maximum.GetInt32(),
-            "STRING" => parameter.Maximum.GetString(),
+            "ACTION" => parameter.Maximum.Value.GetBoolean(),
+            "BOOL" => parameter.Maximum.Value.GetBoolean(),
+            "ENUM" => parameter.Maximum.Value.GetInt32(),
+            "FLOAT" => parameter.Maximum.Value.GetDouble(),
+            "INTEGER" => parameter.Maximum.Value.GetInt32(),
+            "STRING" => parameter.Maximum.Value.GetString(),
             _ => throw new InvalidOperationException($"Unexpected type {parameter.Type}.")
         };
 

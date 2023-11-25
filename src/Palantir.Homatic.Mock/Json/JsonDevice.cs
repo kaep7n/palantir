@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Palantir.Homatic.Mock.Json;
 
@@ -25,7 +24,7 @@ public record JsonDevice(
     [property: JsonPropertyName("roaming")] int Roaming,
     [property: JsonPropertyName("rxMode")] int RxMode,
     [property: JsonPropertyName("team")] string Team,
-    [property: JsonPropertyName("teamChannels")] JsonElement TeamChannels,
+    [property: JsonPropertyName("teamChannels")] IReadOnlyList<string> TeamChannels,
     [property: JsonPropertyName("teamTag")] string TeamTag,
     [property: JsonPropertyName("title")] string Title,
     [property: JsonPropertyName("type")] string Type,

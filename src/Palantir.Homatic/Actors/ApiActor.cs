@@ -85,8 +85,9 @@ public class ApiActor(HomaticHttpClient http, ILogger<ApiActor> logger) : IActor
             JsonValueKind.String => data.Value.GetString(),
             JsonValueKind.False => data.Value.GetBoolean(),
             JsonValueKind.True => (object)data.Value.GetBoolean(),
+            JsonValueKind.Null => null,
             _ => throw new ArgumentException($"Unexpected Value Kind {data.Value.ValueKind}")
-        } ?? throw new InvalidOperationException($"unable to convert json value {data.Value} from type {data.Value.ValueKind}.");
+        };
 
 
         context.Respond(new GetParameterValueResult(timestamp, value));
@@ -111,4 +112,4 @@ public record GetParameterResult(Parameter Parameter);
 
 public record GetParameterValue(string Id);
 
-public record GetParameterValueResult(DateTimeOffset Timestamp, object Value);
+public record GetParameterValueResult(DateTimeOffset Timestamp, object? Value);

@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Api", "Palantir.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Homatic.Sys", "Palantir.Homatic.Sys\Palantir.Homatic.Sys.csproj", "{079BB69C-4594-435A-966A-A18C688DD93A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palantir.Homatic.Mock", "Palantir.Homatic.Mock\Palantir.Homatic.Mock.csproj", "{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palantir.Homatic.Mock", "Palantir.Homatic.Mock\Palantir.Homatic.Mock.csproj", "{24D990CA-E77E-47F8-9EDB-A0AADBAAFEEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

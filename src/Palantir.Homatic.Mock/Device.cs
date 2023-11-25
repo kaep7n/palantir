@@ -1,6 +1,5 @@
 ﻿using Palantir.Homatic.Mock.Json;
 using System.Collections.Immutable;
-using System.Text.Json;
 
 namespace Palantir.Homatic.Mock;
 
@@ -15,7 +14,7 @@ public record Device
         this.Address = raw.Address;
         this.AesActive = raw.AesActive;
         this.AvailableFirmware = raw.AvailableFirmware;
-        this.Children = raw.Children.ToImmutableList();
+        this.Children = raw.Children?.ToImmutableList() ?? ImmutableList<string>.Empty;
         this.Direction = raw.Direction;
         this.Firmware = raw.Firmware;
         this.Flags = raw.Flags;
@@ -33,7 +32,7 @@ public record Device
         this.Roaming = raw.Roaming;
         this.RxMode = raw.RxMode;
         this.Team = raw.Team;
-        this.TeamChannels = raw.TeamChannels;
+        this.TeamChannels = raw.TeamChannels?.ToImmutableList() ?? ImmutableList<string>.Empty;
         this.TeamTag = raw.TeamTag;
         this.Title = raw.Title;
         this.Type = raw.Type;
@@ -83,7 +82,7 @@ public record Device
 
     public string Team { get; init; }
 
-    public JsonElement TeamChannels { get; init; }
+    public IImmutableList<string> TeamChannels { get; init; }
 
     public string TeamTag { get; init; }
 
