@@ -46,6 +46,8 @@ public sealed class Homatic : IHostedService
         this.logger.LogInformation("starting homatic");
         var jsonDevicesPath = Path.Combine(this.RootPath, "devices.json");
 
+        this.logger.LogInformation("reading information from {path}", this.RootPath);
+
         this.jsonDevices = JsonSerializer.Deserialize<JsonDevices>(File.ReadAllText(jsonDevicesPath))
             ?? throw new InvalidOperationException($"could not read devices from path '{jsonDevicesPath}'");
 

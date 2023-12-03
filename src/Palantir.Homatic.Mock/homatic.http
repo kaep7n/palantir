@@ -1,0 +1,56 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@hostname=localhost
+@port=7000
+
+GET http://{{hostname}}:{{port}}/device
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/$MASTER
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/0
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/1
+
+###
+
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/2
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/3
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/6
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/7
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/1/TEMPERATURE
+
+###
+
+GET http://{{hostname}}:{{port}}/device/MEQ0862181/1/TEMPERATURE/~pv
+
+###
+
+PUT http://{{hostname}}:{{port}}/device/MEQ0862181/1/TEMPERATURE/~pv
+Content-Type: application/json
+
+{
+    "v": 24.05
+}

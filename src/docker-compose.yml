@@ -43,7 +43,6 @@ services:
 
   timescale-db:
     image: timescale/timescaledb-ha:pg15-latest
-    restart: always
     ports:
       - 5432:5432
     environment:
@@ -52,10 +51,32 @@ services:
     volumes:
       - timescale-db-data:/var/lib/postgresql/data
 
+  mock-homatic:
+    build:
+      dockerfile: ./Palantir.Homatic.Mock/Dockerfile
+      context: .
+    environment:
+      - ASPNETCORE_ENVIRONMENT=dev-docker
+    ports:
+      - "7000:8080"
+      - "1883:1883"
+    volumes:
+      - mock-homatic:/homatic
+    networks:
+      - palantir
+
 networks:
   consul:
+  palantir:
 
 volumes:
   mongodb_data:
   
   timescale-db-data:
+
+  mock-homatic:
+    driver: local
+    driver_opts:
+      type: none
+      o: "bind"
+      device: "C:\\Users\\kaept\\OneDrive\\palantir\\homatic"
