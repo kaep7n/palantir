@@ -1,11 +1,15 @@
 {
   "profiles": {
-    "Palantir.Sys": {
+    "http": {
       "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "todos",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "dev"
+        "ASPNETCORE_ENVIRONMENT": "dev"
       },
-      "dotnetRunMessages": true
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:8000"
     }
-  }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
 }
