@@ -19,6 +19,7 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
         {
             GetChannelResult msg => this.OnGetChannelResult(context, msg),
             ParameterValueChanged msg => this.OnParameterValueChanged(context, msg),
+            PalantirRoomJoined msg => this.OnRoomJoined(msg),
             TemperatureChanged msg => this.InformRoomAsync(context, msg),
             SetTemperatureChanged msg => this.InformRoomAsync(context, msg),
             _ => Task.CompletedTask
@@ -42,40 +43,19 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
             await room.OnSetTemperatureChanged(setTemperatureChanged, CancellationToken.None);
     }
 
-    private async Task OnGetChannelResult(IContext context, GetChannelResult result)
+    private Task OnGetChannelResult(IContext context, GetChannelResult result)
     {
-        var homaticRooms = result.Channel.Links.Where(l => l.Rel == "room");
+        var homaticRooms = result.Channel.Links.Where(l => l.Rel == "room")
+            .Select(r => r.Href.Replace("/room/", string.Empty))
+            .ToArray();
 
-        foreach (var homaticRoom in homaticRooms)
-        {
-            var homaticRoomId = homaticRoom.Href.Replace("/room/", string.Empty);
+        var joinRoomProps = context.System.DI()
+            .PropsFor<RoomJoinActor>();
 
-            var roomId = homaticRoomId switch
-            {
-                "1230" => "dining_room",
-                "1226" => "kitchen",
-                "1228" => "nursery_1",
-                "1229" => "nursery_2",
-                "1227" => "bedroom",
-                "1225" => "living_room",
-                "1231" => "bathroom",
-                _ => throw new ArgumentOutOfRangeException($"Unexpected room Homatic room id '{homaticRoomId}' unable to map it to an actual room.")
-            };
+        var roomJoinActor = context.Spawn(joinRoomProps);
 
-            var room = context.Cluster().GetRoomGrain(roomId);
-
-            var joinRoom = new JoinRoom(this.id, context.Self);
-
-            try
-            {
-                var roomJoined = await room.Join(joinRoom, CancellationToken.None);
-                this.roomDefinition = roomJoined?.Definition;
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
+        var joinRoomMessage = new JoinPalantirRoom(this.id, homaticRooms);
+        context.Send(roomJoinActor, joinRoomMessage);
 
         foreach (var link in result.Channel.Links)
         {
@@ -87,6 +67,15 @@ public class ChannelActor(PID apiPool, string id, ILogger<ChannelActor> logger) 
 
             this.parameters.Add(link.Href, pid);
         }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnRoomJoined(PalantirRoomJoined msg)
+    {
+        this.roomDefinition = msg.Room;
+
+        return Task.CompletedTask;
     }
 
     private Task OnParameterValueChanged(IContext context, ParameterValueChanged pvc)
